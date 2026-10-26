@@ -1,5 +1,35 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Project Structure
+
+```text
+src/
+├── app/                  # Next.js routes, layouts, and global styles
+│   ├── layout.tsx
+│   ├── page.tsx           # Home route entry point
+│   └── globals.css
+├── components/            # Shared UI components used across features
+│   └── common/
+│       └── BrandMark.tsx  # Shared brand mark / logo component
+│       └── ThemeToggle.tsx
+└── features/
+│    └── home/              # Home page specific UI and supporting code
+│     ├── ├── components/
+│		│       │   ├── HomeHeader.tsx
+│		│       │   └── HomeHero.tsx
+│		│       ├── data/
+│		│       │   └── home-content.ts
+│		│       ├── HomePage.tsx
+│		│       └── index.ts       # Public exports for the Home feature
+│
+```
+
+Keep route files in `src/app` so Next.js can discover them. Put Home-specific code in `src/features/home`; use `src/components` for UI that is shared across multiple features. Add the optional feature subfolders when they are needed.
+
+### Content and feature boundaries
+
+Home-page copy and presentation data live in [`src/features/home/home-content.ts`](./src/features/home/home-content.ts), beside the components that consume them. This keeps product content discoverable and prevents page-specific data from becoming an unrelated global utility. The module contains no React or browser-only imports, so it can be consumed from either Server Components or Client Components.
+
 ## Getting Started
 
 First, run the development server:
