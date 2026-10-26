@@ -6,6 +6,7 @@ import { AuthMode } from "../auth/types";
 import { HeroSection } from "./sections/HeroSection";
 import { FeaturesSection } from "./sections/FeaturesSection";
 import { HighlightsSection } from "./sections/HighlightsSection";
+import { PricingSection } from "./sections/PricingSection";
 
 export interface HomePageProps {
   onOpenApp: () => void;
@@ -35,6 +36,8 @@ export default function HomePage({
         <FeaturesSection />
 
         <HighlightsSection />
+
+        <PricingSection onOpenApp={onOpenApp} onOpenAuth={onOpenAuth} />
       </main>
     </div>
   );
