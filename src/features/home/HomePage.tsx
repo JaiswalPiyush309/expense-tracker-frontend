@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { HomeHeader } from "./components/HomeHeader";
 import { AuthMode } from "../auth/types";
 import { HeroSection } from "./sections/HeroSection";
+import { FeaturesSection } from "./sections/FeaturesSection";
 
 export interface HomePageProps {
   onOpenApp: () => void;
@@ -29,6 +30,8 @@ export default function HomePage({
 
       <main className="flex-1">
         <HeroSection onOpenApp={onOpenApp} onOpenAuth={onOpenAuth} />
+
+        <FeaturesSection />
       </main>
     </div>
   );

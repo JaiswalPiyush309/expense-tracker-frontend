@@ -6,6 +6,18 @@
  * bundle unnecessarily.
  */
 
+import {
+  CalendarClock,
+  ChartNoAxesCombined,
+  FileDown,
+  LucideIcon,
+  PiggyBank,
+  Repeat,
+  Search,
+  Target,
+  WalletCards,
+} from "lucide-react";
+
 export interface HomeNavItem {
   href: string;
   label: string;
@@ -19,60 +31,50 @@ export const HOME_NAV: HomeNavItem[] = [
   { href: "#faq", label: "FAQ" },
 ];
 
-export type FeatureIcon =
-  | "wallet-cards"
-  | "search"
-  | "target"
-  | "chart"
-  | "repeat"
-  | "piggy-bank"
-  | "calendar-clock"
-  | "file-down";
-
 export interface Feature {
-  icon: FeatureIcon;
+  icon: LucideIcon;
   title: string;
   body: string;
 }
 
 export const FEATURES: Feature[] = [
   {
-    icon: "wallet-cards",
+    icon: WalletCards,
     title: "Simple transaction tracking",
     body: "Record money received and spent with an amount, category, date, and useful notes.",
   },
   {
-    icon: "search",
+    icon: Search,
     title: "Searchable ledger",
     body: "Search transaction titles, categories, or notes and filter income and expenses to find entries quickly.",
   },
   {
-    icon: "target",
+    icon: Target,
     title: "Category budgets",
     body: "Set monthly spending limits by category and monitor how much of each budget you have used.",
   },
   {
-    icon: "chart",
+    icon: ChartNoAxesCombined,
     title: "Spending insights",
     body: "Understand where your money goes with income, expense, and category summaries.",
   },
   {
-    icon: "repeat",
+    icon: Repeat,
     title: "Recurring bills",
     body: "Keep track of regular subscriptions and bills, including monthly and yearly costs.",
   },
   {
-    icon: "piggy-bank",
+    icon: PiggyBank,
     title: "Savings awareness",
     body: "Compare your income with your expenses to understand how much money remains.",
   },
   {
-    icon: "calendar-clock",
+    icon: CalendarClock,
     title: "Date-based records",
     body: "Review transactions by date and keep a clearer picture of your daily spending.",
   },
   {
-    icon: "file-down",
+    icon: FileDown,
     title: "Portable data",
     body: "Export your transactions to CSV for backups or further analysis in spreadsheet tools.",
   },
