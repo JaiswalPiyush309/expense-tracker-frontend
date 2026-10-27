@@ -1,12 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { HomeHeader } from "./components/HomeHeader";
 import { AuthMode } from "../auth/types";
 import { HeroSection } from "./sections/HeroSection";
 import { FeaturesSection } from "./sections/FeaturesSection";
 import { HighlightsSection } from "./sections/HighlightsSection";
 import { PricingSection } from "./sections/PricingSection";
+import { FaqSection } from "./sections/FaqSection";
 
 export interface HomePageProps {
   onOpenApp: () => void;
@@ -38,6 +38,8 @@ export default function HomePage({
         <HighlightsSection />
 
         <PricingSection onOpenApp={onOpenApp} onOpenAuth={onOpenAuth} />
+
+        <FaqSection />
       </main>
     </div>
   );
