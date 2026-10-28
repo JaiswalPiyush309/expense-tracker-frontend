@@ -1,6 +1,7 @@
 "use client";
 
 import { UserProfile } from "@/features/auth/types";
+import { getStoredUser, saveStoredUser } from "@/lib/storage";
 import { useCallback, useEffect, useState } from "react";
 
 export function useAuthUser() {
