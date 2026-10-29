@@ -1,4 +1,4 @@
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/Button";
 import { AuthMode } from "@/features/auth/types";
 import { ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
 import { LivePreview } from "./LivePreview";

@@ -5,7 +5,7 @@ import { HOME_NAV } from "../data/home-content";
 import ThemeToggle from "@/components/common/ThemeToggle";
 import { AuthMode } from "@/features/auth/types";
 import { useState } from "react";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/Button";
 import { Menu, X } from "lucide-react";
 
 interface HomeHeaderProps {

@@ -6,7 +6,7 @@ import { TextField } from "./TextField";
 import { Mail, User } from "lucide-react";
 import { PasswordField } from "./PasswordField";
 import { MIN_PASSWORD } from "@/lib/auth-validation";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/Button";
 
 export const AuthForm = ({ form }: { form: AuthFormState }) => {
   const {

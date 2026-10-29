@@ -1,7 +1,7 @@
 import { formatINR } from "@/lib/currency";
 import { Plan } from "../data/home-content";
 import { Check } from "lucide-react";
-import { Button } from "@/components/common/Button";
+import { Button } from "@/components/ui/Button";
 
 export const PricingCard = ({
   plan,
