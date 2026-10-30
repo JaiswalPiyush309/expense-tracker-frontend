@@ -32,6 +32,13 @@
 
   --radius-card: 1rem;
   --shadow-card: 0 1px 2px rgb(16 24 40 / 4%), 0 8px 28px rgb(16 24 40 / 4%);
+
+  --chart-1: #3326c9; /* indigo  */
+  --chart-2: #2d6a4f; /* green   */
+  --chart-3: #b0213f; /* crimson */
+  --chart-4: #86d9b0; /* mint    */
+  --chart-5: #7d7a8a; /* slate   */
+  --chart-6: #c8c5d6; /* mist    */
 }
 
 .dark {
@@ -59,6 +66,13 @@
   --focus-ring: #a2b0ff;
 
   --shadow-card: 0 1px 2px rgb(0 0 0 / 12%), 0 10px 30px rgb(0 0 0 / 12%);
+
+  --chart-1: #879aff;
+  --chart-2: #55d6a5;
+  --chart-3: #ff918b;
+  --chart-4: #2f8f6b;
+  --chart-5: #8f9bb0;
+  --chart-6: #4a5870;
 }
 
 /* --------------------------------------------------
@@ -89,6 +103,16 @@
 
   --radius-card: var(--radius-card);
   --shadow-card: var(--shadow-card);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+
+  /* used by ring-focus in Button / Select / SegmentedControl */
+  --color-focus: var(--focus-ring);
 }
 
 /* --------------------------------------------------
