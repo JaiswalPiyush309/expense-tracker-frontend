@@ -5,11 +5,13 @@ import {
   capital,
   cashFlow,
   compareText,
+  equities,
   header,
   kpis,
   lendingRows,
   observations,
   periodOptions,
+  portfolio,
   taxNote,
   velocity,
 } from "./data/mock";
@@ -25,6 +27,8 @@ import { CapitalDistributionCard } from "./components/CapitalDistributionCard";
 import { MerchantVelocityCard } from "./components/MerchantVelocityCard";
 import { ObservationsCard } from "./components/ObservationsCard";
 import { LendingPositionCard } from "./components/LendingPositionCard";
+import { EquitiesCard } from "./components/EquitiesCard";
+import { AllocationCard } from "./components/AllocationCard";
 
 const SECTIONS: readonly { value: ReportSection; label: string }[] = [
   { value: "all", label: "All Analytics & Executive Summary" },
@@ -47,7 +51,11 @@ export function ReportsView() {
   const show = (...ids: ReportSection[]) =>
     section === "all" || ids.includes(section);
   const hasVisibleContent =
-    section === "all" || section === "income-expense" || section === "spending";
+    section === "all" ||
+    section === "income-expense" ||
+    section === "spending" ||
+    section === "lending" ||
+    section === "investments";
 
   const exportKpis = () =>
     downloadCsv("report-summary.csv", [
@@ -108,6 +116,24 @@ export function ReportsView() {
         )}
 
         {show("lending") && <LendingPositionCard rows={lendingRows} />}
+
+        {show("investments") && (
+          <div className={TWO_COL}>
+            <EquitiesCard
+              rows={equities}
+              syncedAt={portfolio.syncedAt}
+              invested={portfolio.invested}
+              current={portfolio.current}
+            />
+            <AllocationCard
+              segments={portfolio.allocation}
+              assetsLabel={portfolio.assetsLabel}
+              riskLabel={portfolio.riskLabel}
+              xirr={portfolio.xirr}
+              rebalancing={portfolio.rebalancing}
+            />
+          </div>
+        )}
 
         {!hasVisibleContent && (
           <div className="rounded-2xl border border-dashed border-line bg-surface-muted/40 px-6 py-10 text-center text-sm text-muted">
