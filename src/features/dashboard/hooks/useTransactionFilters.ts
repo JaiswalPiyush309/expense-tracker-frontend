@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Transaction } from "../types";
+import type { Transaction } from "../types";
 
 export const ALL = "all";
 
-export function useTransactionFilters(transactions: Transaction[]) {
+export function useTransactionFilters(transactions: readonly Transaction[]) {
   const [category, setCategory] = useState<string>(ALL);
   const [account, setAccount] = useState<string>(ALL);
 
