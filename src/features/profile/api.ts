@@ -1,8 +1,13 @@
-import type { ProfileValues, SaveProfileResult } from "./types";
+import {
+  PROFILE_PHOTO_MAX_BYTES,
+  PROFILE_PHOTO_MIME_TYPES,
+  type ProfileValues,
+  type SaveProfileResult,
+} from "./types";
 import { validateProfile } from "./validation";
 
-export const MAX_PROFILE_PHOTO_BYTES = 5 * 1024 * 1024;
-const ACCEPTED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+export const MAX_PROFILE_PHOTO_BYTES = PROFILE_PHOTO_MAX_BYTES;
+const ACCEPTED_PHOTO_TYPES = new Set(PROFILE_PHOTO_MIME_TYPES);
 
 /**
  * PLACEHOLDER. Replace the body with a server action or a fetch to your API.
