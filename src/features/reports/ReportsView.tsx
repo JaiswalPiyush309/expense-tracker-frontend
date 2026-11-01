@@ -7,7 +7,10 @@ import {
   compareText,
   header,
   kpis,
+  lendingRows,
+  observations,
   periodOptions,
+  taxNote,
   velocity,
 } from "./data/mock";
 import { downloadCsv } from "@/lib/csv";
@@ -20,6 +23,8 @@ import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { CashFlowCard } from "./components/CashFlowCard";
 import { CapitalDistributionCard } from "./components/CapitalDistributionCard";
 import { MerchantVelocityCard } from "./components/MerchantVelocityCard";
+import { ObservationsCard } from "./components/ObservationsCard";
+import { LendingPositionCard } from "./components/LendingPositionCard";
 
 const SECTIONS: readonly { value: ReportSection; label: string }[] = [
   { value: "all", label: "All Analytics & Executive Summary" },
@@ -42,9 +47,7 @@ export function ReportsView() {
   const show = (...ids: ReportSection[]) =>
     section === "all" || ids.includes(section);
   const hasVisibleContent =
-    section === "all" ||
-    section === "income-expense" ||
-    section === "spending";
+    section === "all" || section === "income-expense" || section === "spending";
 
   const exportKpis = () =>
     downloadCsv("report-summary.csv", [
@@ -97,12 +100,14 @@ export function ReportsView() {
         {show("spending") && (
           <div className={TWO_COL}>
             <MerchantVelocityCard {...velocity} />
-            {/* <ObservationsCard
+            <ObservationsCard
               observations={observations}
               footerNote={taxNote}
-            /> */}
+            />
           </div>
         )}
+
+        {show("lending") && <LendingPositionCard rows={lendingRows} />}
 
         {!hasVisibleContent && (
           <div className="rounded-2xl border border-dashed border-line bg-surface-muted/40 px-6 py-10 text-center text-sm text-muted">
