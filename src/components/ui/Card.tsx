@@ -14,6 +14,7 @@ export function Card({ className, ...props }: ComponentProps<"section">) {
 }
 
 interface CardHeaderProps {
+  eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   /** Small tile shown before the title. */
@@ -25,6 +26,7 @@ interface CardHeaderProps {
 
 export function CardHeader({
   title,
+  eyebrow,
   description,
   icon,
   actions,
@@ -45,6 +47,11 @@ export function CardHeader({
         )}
 
         <div className="min-w-0">
+          {eyebrow && (
+            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted">
+              {eyebrow}
+            </p>
+          )}
           <h2 className="text-base font-bold text-ink sm:text-lg">{title}</h2>
           {description && (
             <p className="mt-0.5 text-sm text-muted">{description}</p>

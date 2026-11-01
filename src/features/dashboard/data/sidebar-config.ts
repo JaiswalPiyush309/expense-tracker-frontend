@@ -35,7 +35,7 @@ export const sidebarGroups: SidebarGroup[] = [
       },
       {
         label: "Financial Reports",
-        href: "/dashboard/reports",
+        href: "/reports",
         icon: ChartNoAxesCombined,
       },
     ],
