@@ -7,6 +7,7 @@ interface ProgressBarProps {
   tone?: Tone;
   label: string;
   className?: string;
+  barClassName?: string;
 }
 
 export function ProgressBar({
@@ -14,6 +15,7 @@ export function ProgressBar({
   tone = "accent",
   label,
   className,
+  barClassName,
 }: ProgressBarProps) {
   const safeValue = Number.isFinite(value) ? value : 0;
   const clamped = Math.min(100, Math.max(0, safeValue));
@@ -34,6 +36,7 @@ export function ProgressBar({
         className={cn(
           "h-full rounded-full transition-[width] duration-500",
           toneBar[tone],
+          barClassName,
         )}
         style={{ width: `${clamped}%` }}
       />

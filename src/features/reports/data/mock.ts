@@ -234,7 +234,7 @@ export const capital = {
       amount: 55000,
       color: 1,
     },
-  ] satisfies FlowItem[],
+  ] as const satisfies readonly FlowItem[],
   expense: [
     {
       id: "rent",
@@ -267,7 +267,7 @@ export const capital = {
       amount: 42525,
       color: 6,
     },
-  ] satisfies FlowItem[],
+  ] as const satisfies readonly FlowItem[],
   subcategoryCount: 18,
 };
 

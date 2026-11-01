@@ -27,7 +27,7 @@ export function CashFlowCard({
   data,
   className,
 }: {
-  data: Readonly<Record<CashFlowRange, readonly CashFlowPoint[]>>;
+  data: Record<CashFlowRange, readonly CashFlowPoint[]>;
   className?: string;
 }) {
   const [range, setRange] = useState<CashFlowRange>("monthly");
