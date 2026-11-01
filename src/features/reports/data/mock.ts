@@ -643,5 +643,5 @@ export const audit = {
       status: "Completed",
       statusTone: "good",
     },
-  ] satisfies AuditEntry[],
+  ] as readonly AuditEntry[],
 };

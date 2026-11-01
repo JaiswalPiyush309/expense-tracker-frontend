@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import {
+  audit,
   bankMeta,
   banks,
   capital,
@@ -34,6 +35,8 @@ import { EquitiesCard } from "./components/EquitiesCard";
 import { AllocationCard } from "./components/AllocationCard";
 import { BankLiquidityCard } from "./components/BankLiquidityCard";
 import { UpiVolumeCard } from "./components/UpiVolumeCard";
+import { AuditLedgerCard } from "./components/AuditLedgerCard";
+import { Card } from "@/components/ui/Card";
 
 const SECTIONS: readonly { value: ReportSection; label: string }[] = [
   { value: "all", label: "All Analytics & Executive Summary" },
@@ -53,6 +56,8 @@ export function ReportsView() {
   const [period, setPeriod] = useState<ReportPeriod>("6m");
   const [compare, setCompare] = useState(true);
   const [section, setSection] = useState<ReportSection>("all");
+  const [auditPage, setAuditPage] = useState(1);
+
   const show = (...ids: ReportSection[]) =>
     section === "all" || ids.includes(section);
   const hasVisibleContent =
@@ -150,6 +155,26 @@ export function ReportsView() {
             />
             <UpiVolumeCard {...upi} />
           </div>
+        )}
+
+        {show("all") && (
+          <AuditLedgerCard
+            entries={audit.entries}
+            total={audit.total}
+            page={auditPage}
+            pageSize={audit.pageSize}
+            onPageChange={setAuditPage}
+          />
+        )}
+
+        {section === "net-worth" && (
+          <Card className="grid place-items-center p-10 text-center">
+            <h2 className="text-lg font-bold text-ink">Net Worth & Goals</h2>
+            <p className="mt-1 max-w-md text-sm text-muted">
+              This view isn&apos;t designed yet. Send the design and it will
+              slot in here.
+            </p>
+          </Card>
         )}
 
         {!hasVisibleContent && (
