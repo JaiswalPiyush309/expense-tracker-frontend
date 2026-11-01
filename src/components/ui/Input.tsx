@@ -4,13 +4,18 @@ import { cn } from "@/lib/cn";
 export interface InputProps extends ComponentProps<"input"> {
   /** Icon shown inside the left edge. */
   icon?: ReactNode;
+  /** Content shown inside the right edge, e.g. a status badge. */
+  trailing?: ReactNode;
   /** Classes applied directly to the native input. */
   inputClassName?: string;
 }
 
 /** Text input styled like <Select>. `className` applies to the wrapper (use it for width). */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input({ icon, className, inputClassName, ...props }, ref) {
+  function Input(
+    { icon, trailing, className, inputClassName, ...props },
+    ref,
+  ) {
     return (
       <div className={cn("relative inline-flex w-full", className)}>
         {icon && (
@@ -29,12 +34,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             "hover:bg-accent-soft focus-visible:border-accent focus-visible:bg-surface",
             "focus-visible:ring-2 focus-visible:ring-focus",
             "disabled:cursor-not-allowed disabled:opacity-60",
-            "aria-[invalid=true]:border-bad aria-[invalid=true]:focus-visible:ring-bad",
+            "aria-invalid:border-bad aria-invalid:focus-visible:ring-bad",
             icon ? "pl-9" : "pl-3.5",
+            trailing ? "pr-20" : "pr-3",
             inputClassName,
           )}
           {...props}
         />
+        {trailing && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2">
+            {trailing}
+          </span>
+        )}
       </div>
     );
   },

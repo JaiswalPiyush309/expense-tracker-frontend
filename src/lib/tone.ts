@@ -30,3 +30,12 @@ export const toneBar: Record<Tone, string> = {
   neutral: "bg-muted",
   ink: "bg-ink",
 };
+
+/** SVG stroke colour (rings, lines). */
+export const toneStroke: Record<Tone, string> = {
+  good: "stroke-good",
+  bad: "stroke-bad",
+  accent: "stroke-accent",
+  neutral: "stroke-muted",
+  ink: "stroke-ink",
+};
