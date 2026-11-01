@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/Button";
-import { Badge, Download, FileText, RefreshCw } from "lucide-react";
+import { Download, FileText, RefreshCw } from "lucide-react";
 
 interface ReportsHeaderProps {
   title: string;
@@ -27,9 +27,9 @@ export function ReportsHeader({
           <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
             {title}
           </h1>
-          <Badge tone="accent" className="px-2.5 py-1 text-xs">
+          <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
             {badge}
-          </Badge>
+          </span>
         </div>
         <p className="mt-2 max-w-2xl text-sm text-muted sm:text-base">
           {description}
@@ -45,6 +45,7 @@ export function ReportsHeader({
           variant="secondary"
           size="sm"
           onClick={onRefresh}
+          disabled={!onRefresh}
           className="min-h-10 px-3.5"
         >
           <RefreshCw aria-hidden="true" className="h-4 w-4" />
@@ -54,12 +55,18 @@ export function ReportsHeader({
           variant="secondary"
           size="sm"
           onClick={onExportCsv}
+          disabled={!onExportCsv}
           className="min-h-10 px-3.5"
         >
           <Download aria-hidden="true" className="h-4 w-4" />
           Export CSV
         </Button>
-        <Button size="sm" onClick={onDownloadPdf} className="min-h-10 px-4">
+        <Button
+          size="sm"
+          onClick={onDownloadPdf}
+          disabled={!onDownloadPdf}
+          className="min-h-10 px-4"
+        >
           <FileText aria-hidden="true" className="h-4 w-4" />
           Download PDF (Audit-Ready)
         </Button>
