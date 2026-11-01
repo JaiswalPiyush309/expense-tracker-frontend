@@ -9,7 +9,7 @@ import { CircleMinus, CirclePlus, Download, Handshake } from "lucide-react";
 interface WelcomeCardProps {
   name: string;
   netWorth: number;
-  netWorthChange: number;
+  netWorthChange: string;
   periodLabel: string;
   onAddExpense?: () => void;
   onAddIncome?: () => void;
@@ -28,10 +28,10 @@ export function WelcomeCard({
   onImportStatement,
 }: WelcomeCardProps) {
   const changeTone: Tone =
-    netWorthChange > 0
-      ? "good"
-      : netWorthChange < 0
-        ? "bad"
+    netWorthChange.trim().startsWith("-")
+      ? "bad"
+      : netWorthChange.trim().startsWith("+")
+        ? "good"
         : "neutral";
 
   return (
@@ -42,7 +42,7 @@ export function WelcomeCard({
         </h1>
 
         <p
-          aria-label={`Net worth change: ${formatINR(netWorthChange, { decimals: false })}`}
+          aria-label={`Net worth change: ${netWorthChange}`}
           className={cn(
             "mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold",
             toneSoft[changeTone],
@@ -54,7 +54,7 @@ export function WelcomeCard({
           />
           Net Worth: {formatINR(netWorth, { decimals: false })}
           <span className="font-medium tabular-nums opacity-80">
-            ({formatINR(netWorthChange, { decimals: false })})
+            ({netWorthChange})
           </span>
         </p>
 
