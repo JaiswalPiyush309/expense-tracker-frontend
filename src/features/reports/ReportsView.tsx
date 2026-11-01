@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import {
+  bankMeta,
+  banks,
   capital,
   cashFlow,
   compareText,
@@ -13,6 +15,7 @@ import {
   periodOptions,
   portfolio,
   taxNote,
+  upi,
   velocity,
 } from "./data/mock";
 import { downloadCsv } from "@/lib/csv";
@@ -29,6 +32,8 @@ import { ObservationsCard } from "./components/ObservationsCard";
 import { LendingPositionCard } from "./components/LendingPositionCard";
 import { EquitiesCard } from "./components/EquitiesCard";
 import { AllocationCard } from "./components/AllocationCard";
+import { BankLiquidityCard } from "./components/BankLiquidityCard";
+import { UpiVolumeCard } from "./components/UpiVolumeCard";
 
 const SECTIONS: readonly { value: ReportSection; label: string }[] = [
   { value: "all", label: "All Analytics & Executive Summary" },
@@ -55,7 +60,8 @@ export function ReportsView() {
     section === "income-expense" ||
     section === "spending" ||
     section === "lending" ||
-    section === "investments";
+    section === "investments" ||
+    section === "bank-upi";
 
   const exportKpis = () =>
     downloadCsv("report-summary.csv", [
@@ -132,6 +138,17 @@ export function ReportsView() {
               xirr={portfolio.xirr}
               rebalancing={portfolio.rebalancing}
             />
+          </div>
+        )}
+
+        {show("bank-upi") && (
+          <div className="grid gap-6 xl:grid-cols-2">
+            <BankLiquidityCard
+              accounts={banks}
+              registered={bankMeta.registered}
+              note={bankMeta.note}
+            />
+            <UpiVolumeCard {...upi} />
           </div>
         )}
 

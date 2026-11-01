@@ -560,7 +560,7 @@ export const upi = {
       transactions: 23,
       color: 5,
     },
-  ] satisfies UpiApp[],
+  ] as readonly UpiApp[],
   averageTicket: 540,
   reliability: "Zero Failure Rate (99.8%)",
 };
