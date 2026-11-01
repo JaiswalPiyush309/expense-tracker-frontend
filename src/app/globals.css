@@ -39,6 +39,7 @@
   --chart-4: #86d9b0; /* mint    */
   --chart-5: #7d7a8a; /* slate   */
   --chart-6: #c8c5d6; /* mist    */
+  --chart-7: #5b4be0; /* violet  */
 }
 
 .dark {
@@ -73,6 +74,7 @@
   --chart-4: #2f8f6b;
   --chart-5: #8f9bb0;
   --chart-6: #4a5870;
+  --chart-7: #a89bff;
 }
 
 /* --------------------------------------------------
@@ -110,6 +112,7 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
   --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
 
   /* used by ring-focus in Button / Select / SegmentedControl */
   --color-focus: var(--focus-ring);
