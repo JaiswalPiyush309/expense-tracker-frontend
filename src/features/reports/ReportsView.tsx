@@ -8,6 +8,7 @@ import {
   header,
   kpis,
   periodOptions,
+  velocity,
 } from "./data/mock";
 import { downloadCsv } from "@/lib/csv";
 import { ReportsHeader } from "./components/ReportsHeader";
@@ -18,6 +19,7 @@ import { KpiGrid } from "./components/KpiGrid";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { CashFlowCard } from "./components/CashFlowCard";
 import { CapitalDistributionCard } from "./components/CapitalDistributionCard";
+import { MerchantVelocityCard } from "./components/MerchantVelocityCard";
 
 const SECTIONS: readonly { value: ReportSection; label: string }[] = [
   { value: "all", label: "All Analytics & Executive Summary" },
@@ -39,7 +41,10 @@ export function ReportsView() {
   const [section, setSection] = useState<ReportSection>("all");
   const show = (...ids: ReportSection[]) =>
     section === "all" || ids.includes(section);
-  const hasVisibleContent = section === "all" || section === "income-expense";
+  const hasVisibleContent =
+    section === "all" ||
+    section === "income-expense" ||
+    section === "spending";
 
   const exportKpis = () =>
     downloadCsv("report-summary.csv", [
@@ -88,6 +93,17 @@ export function ReportsView() {
             <CapitalDistributionCard {...capital} />
           </div>
         )}
+
+        {show("spending") && (
+          <div className={TWO_COL}>
+            <MerchantVelocityCard {...velocity} />
+            {/* <ObservationsCard
+              observations={observations}
+              footerNote={taxNote}
+            /> */}
+          </div>
+        )}
+
         {!hasVisibleContent && (
           <div className="rounded-2xl border border-dashed border-line bg-surface-muted/40 px-6 py-10 text-center text-sm text-muted">
             This report section is not available yet.

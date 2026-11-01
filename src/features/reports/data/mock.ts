@@ -300,7 +300,7 @@ export const velocity = {
       caption: "Groww Investment Top-up",
       captionTone: "neutral",
     },
-  ] satisfies VelocityStat[],
+  ] as const satisfies readonly VelocityStat[],
   merchants: [
     {
       id: "amazon",
@@ -337,7 +337,7 @@ export const velocity = {
       amount: 9200,
       countLabel: "4 refills",
     },
-  ] satisfies Merchant[],
+  ] as const satisfies readonly Merchant[],
 };
 
 export const observations: Observation[] = [
