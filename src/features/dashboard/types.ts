@@ -75,6 +75,7 @@ export interface LedgerAction {
   label: string;
   variant: "primary" | "soft" | "success" | "secondary";
   icon?: LucideIcon;
+  onClick?: () => void;
 }
 
 export interface LedgerEntry {
