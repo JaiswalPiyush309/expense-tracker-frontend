@@ -30,12 +30,18 @@ export function SecuritySummary({ security }: { security: SecuritySnapshot }) {
             2FA {security.twoFactor ? "ON" : "OFF"}
           </Badge>
         </p>
-        <p className="mt-1 text-xs text-muted">
-          Last session: {security.lastSession}
-        </p>
-        <p className="mt-0.5 text-[11px] font-semibold text-muted">
-          {security.location}
-        </p>
+        {security.lastSession ? (
+          <p className="mt-1 text-xs text-muted">
+            Last session: {security.lastSession}
+          </p>
+        ) : (
+          <p className="mt-1 text-xs text-muted">Session details available in Security</p>
+        )}
+        {security.location && (
+          <p className="mt-0.5 text-[11px] font-semibold text-muted">
+            {security.location}
+          </p>
+        )}
       </div>
     </div>
   );

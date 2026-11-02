@@ -80,10 +80,10 @@ export const designations: Designation[] = [
 ];
 
 export const genderOptions: SelectOption[] = [
-  { value: "Male", label: "Male" },
-  { value: "Female", label: "Female" },
-  { value: "Non-binary", label: "Non-binary" },
-  { value: "Prefer not to say", label: "Prefer not to say" },
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "other", label: "Other" },
+  { value: "prefer_not_to_say", label: "Prefer not to say" },
 ];
 
 export const countryOptions: SelectOption[] = [

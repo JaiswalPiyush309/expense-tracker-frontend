@@ -45,6 +45,41 @@ export interface SaveProfileRequest {
 
 export interface SaveProfileResult {
   savedAt: string;
+  profile?: ProfileResponse;
+}
+
+export type ProfileGender =
+  | "male"
+  | "female"
+  | "other"
+  | "prefer_not_to_say";
+
+export interface ProfileResponse {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  displayName: string | null;
+  email: string;
+  phone: string | null;
+  phoneVerified: boolean;
+  dateOfBirth: string | null;
+  gender: ProfileGender | null;
+  country: string | null;
+  state: string | null;
+  city: string | null;
+  postalCode: string | null;
+  bio: string | null;
+  designation: string | null;
+  industry: string | null;
+  avatarUrl: string | null;
+  plan: string;
+  kyc: {
+    status: "pending" | "verified" | "rejected";
+    pan: string | null;
+    aadhaar: string | null;
+  };
+  twoFactorEnabled: boolean;
+  memberSince: string;
 }
 
 export interface ProfileSummary {

@@ -12,7 +12,7 @@ export type SaveState =
   | { status: "saved" }
   | { status: "error"; message: string };
 
-type SaveFn = (values: ProfileValues, photo: File | null) => Promise<unknown>;
+type SaveFn = (values: ProfileValues, photo: File | null) => Promise<ProfileValues | void>;
 
 /**
  * Form state for the profile page: dirty tracking, errors that appear after a
@@ -146,7 +146,8 @@ export function useProfileForm(initial: ProfileValues, onSave: SaveFn) {
     const submittedValues = values;
     const submittedPhoto = photoFile;
     try {
-      await onSave(submittedValues, submittedPhoto);
+      const serverValues = await onSave(submittedValues, submittedPhoto);
+      const nextSavedValues = serverValues ?? submittedValues;
 
       const previousSavedPreview = savedPreviewUrl.current;
       const nextSavedPreview = submittedValues.photoUrl?.startsWith("blob:")
@@ -162,11 +163,12 @@ export function useProfileForm(initial: ProfileValues, onSave: SaveFn) {
       savedPreviewUrl.current = nextSavedPreview;
       if (previewUrl.current === nextSavedPreview) previewUrl.current = null;
 
-      setSaved(submittedValues);
+      setSaved(nextSavedValues);
       const changedDuringSave =
         valuesRef.current !== submittedValues ||
         photoFileRef.current !== submittedPhoto;
       if (!changedDuringSave) {
+        setValues(nextSavedValues);
         setPhotoFile(null);
         setTouched(new Set());
         setSubmitted(false);

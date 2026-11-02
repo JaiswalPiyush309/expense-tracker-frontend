@@ -1,19 +1,13 @@
 "use client";
 
-import { Bell, Check, Database, SlidersHorizontal, Wallet } from "lucide-react";
-import type { ProfileTab } from "./types";
+import { Banknote, Bell, Check, CreditCard, Database, Fingerprint, SlidersHorizontal, Wallet, Building2 } from "lucide-react";
+import type { ProfileResponse, ProfileTab } from "./types";
 import {
   countryOptions,
-  designations,
   genderOptions,
-  initialValues,
-  kycDocuments,
-  kycNote,
-  security,
-  summary,
 } from "./data/mock";
-import { saveProfile } from "./api";
-import { useState } from "react";
+import { getProfile, saveProfile, toProfileValues } from "./api";
+import { useEffect, useState } from "react";
 import { useProfileForm } from "./hooks/useProfileForm";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -40,11 +34,53 @@ const PLACEHOLDER_ICONS = {
 } as const;
 
 export function ProfileView() {
-  const form = useProfileForm(initialValues, saveProfile);
+  const [profile, setProfile] = useState<ProfileResponse | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [tab, setTab] = useState<ProfileTab>("personal");
 
+  useEffect(() => {
+    getProfile().then(setProfile).catch((err: unknown) => {
+      setLoadError(err instanceof Error ? err.message : "Unable to load your profile.");
+    });
+  }, []);
+
+  if (loadError) return <p role="alert" className="p-6 text-sm text-bad">{loadError}</p>;
+  if (!profile) return <p role="status" className="p-6 text-sm text-muted">Loading your profile…</p>;
+
+  return <ProfileContent profile={profile} tab={tab} setTab={setTab} />;
+}
+
+function ProfileContent({
+  profile,
+  tab,
+  setTab,
+}: {
+  profile: ProfileResponse;
+  tab: ProfileTab;
+  setTab: (tab: ProfileTab) => void;
+}) {
+  const form = useProfileForm(toProfileValues(profile), async (values, photo) => {
+    const result = await saveProfile(values, photo);
+    return result.profile ? toProfileValues(result.profile) : undefined;
+  });
+
   const saving = form.saveState.status === "saving";
-  const savedName = `${form.saved.firstName} ${form.saved.lastName}`.trim();
+  const savedName = form.saved.displayName || `${form.saved.firstName} ${form.saved.lastName}`.trim();
+  const summary = {
+    kycLabel: profile.kyc.status === "verified" ? "KYC Verified" : `KYC ${profile.kyc.status}`,
+    planLabel: profile.plan,
+    memberId: profile.id,
+    memberSince: profile.memberSince,
+  };
+  const kycDocuments = [
+    ...(profile.kyc.pan ? [{ id: "pan", title: "PAN Card", icon: CreditCard, maskedNumber: profile.kyc.pan, source: "Linked to NSDL", verified: profile.kyc.status === "verified" }] : []),
+    ...(profile.kyc.aadhaar ? [{ id: "aadhaar", title: "Aadhaar e-KYC", icon: Fingerprint, maskedNumber: profile.kyc.aadhaar, source: "UIDAI Digilocker", verified: profile.kyc.status === "verified" }] : []),
+  ];
+  const designations = [
+    ...(profile.designation ? [{ id: "role", label: "Designation", value: profile.designation, icon: Building2 }] : []),
+    ...(profile.industry ? [{ id: "industry", label: "Primary Industry", value: profile.industry, icon: Banknote }] : []),
+  ];
+  const security = { score: profile.twoFactorEnabled ? 92 : 60, twoFactor: profile.twoFactorEnabled, lastSession: "", location: "" };
 
   const status =
     form.saveState.status === "error"
@@ -122,13 +158,13 @@ export function ProfileView() {
               form={form}
               genderOptions={genderOptions}
               countryOptions={countryOptions}
-              mobileVerified
+              mobileVerified={profile.phoneVerified}
               onChangeEmail={() => {
                 // Open your email-change flow (modal or route) here.
               }}
             />
             <div className="space-y-6">
-              <KycCard documents={kycDocuments} note={kycNote} />
+              <KycCard documents={kycDocuments} note="Your tax identifiers are masked and protected by the server." />
               <DesignationCard items={designations} />
             </div>
           </div>
