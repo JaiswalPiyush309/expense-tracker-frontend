@@ -7,10 +7,7 @@ import {
 } from "./types";
 import { validateProfile } from "./validation";
 import { getAccessToken } from "@/lib/storage";
-
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000"
-).replace(/\/+$/, "");
+import { API_BASE_URL } from "@/lib/api-config";
 
 export const MAX_PROFILE_PHOTO_BYTES = PROFILE_PHOTO_MAX_BYTES;
 const ACCEPTED_PHOTO_TYPES = new Set<string>(PROFILE_PHOTO_MIME_TYPES);
