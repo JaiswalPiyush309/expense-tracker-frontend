@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "./api-config";
+import { getApiBaseUrl } from "./api-config";
 
 export interface LoginRequest {
   email: string;
@@ -39,7 +39,7 @@ async function postAuth<T>(
   let response: Response;
 
   try {
-    response = await fetch(`${API_BASE_URL}/auth/${endpoint}`, {
+    response = await fetch(`${getApiBaseUrl()}/auth/${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

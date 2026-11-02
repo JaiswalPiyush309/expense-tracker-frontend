@@ -7,7 +7,7 @@ import {
 } from "./types";
 import { validateProfile } from "./validation";
 import { getAccessToken } from "@/lib/storage";
-import { API_BASE_URL } from "@/lib/api-config";
+import { getApiBaseUrl } from "@/lib/api-config";
 
 export const MAX_PROFILE_PHOTO_BYTES = PROFILE_PHOTO_MAX_BYTES;
 const ACCEPTED_PHOTO_TYPES = new Set<string>(PROFILE_PHOTO_MIME_TYPES);
@@ -18,7 +18,7 @@ async function profileRequest<T>(endpoint = "", init?: RequestInit): Promise<T> 
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/users/me${endpoint}`, {
+    response = await fetch(`${getApiBaseUrl()}/users/me${endpoint}`, {
       ...init,
       headers: {
         Accept: "application/json",
