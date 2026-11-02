@@ -16,7 +16,7 @@ const sum = <T,>(items: readonly T[], pick: (item: T) => number) =>
 
 const money = (value: number) => formatINR(safeAmount(value), { decimals: false });
 
-function Pill({ tone, children }: { tone: keyof typeof toneSoft; children: string }) {
+function Pill({ tone, children }: { tone: keyof typeof toneSoft; children: React.ReactNode }) {
   return (
     <span
       className={cn(

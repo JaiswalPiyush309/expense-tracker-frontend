@@ -5,10 +5,12 @@ import { cn } from "@/lib/cn";
 interface SelectProps extends ComponentProps<"select"> {
   /** Icon shown inside the left edge. */
   icon?: ReactNode;
+  /** Additional classes applied to the native select element. */
+  selectClassName?: string;
 }
 
 /** Native <select> styled to match the design; keeps full keyboard + mobile support. */
-export function Select({ icon, className, children, ...props }: SelectProps) {
+export function Select({ icon, className, selectClassName, children, ...props }: SelectProps) {
   return (
     <div className={cn("relative inline-flex", className)}>
       {icon && (
@@ -26,6 +28,7 @@ export function Select({ icon, className, children, ...props }: SelectProps) {
           "focus-visible:ring-2 focus-visible:ring-focus",
           "[&>option]:bg-surface [&>option]:text-ink",
           icon ? "pl-9" : "pl-3.5",
+          selectClassName,
         )}
         {...props}
       >

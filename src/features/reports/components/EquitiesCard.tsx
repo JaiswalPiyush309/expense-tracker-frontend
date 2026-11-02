@@ -2,7 +2,8 @@ import { formatINR, formatPct } from "@/lib/format";
 import { EquityRow } from "../types";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { cn } from "@/lib/cn";
-import { ArrowRight, Badge } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 import { Table, Td, Th } from "@/components/ui/Table";
 import Link from "next/link";
 

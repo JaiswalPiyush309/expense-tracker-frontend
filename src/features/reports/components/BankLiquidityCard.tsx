@@ -9,7 +9,7 @@ import { Callout } from "@/components/ui/Callout";
 const safeAmount = (value: number) =>
   Number.isFinite(value) ? Math.max(0, value) : 0;
 
-function Pill({ children }: { children: string }) {
+function Pill({ children }: { children: React.ReactNode }) {
   return (
     <span className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-semibold text-muted">
       {children}
@@ -37,7 +37,7 @@ export function BankLiquidityCard({
         title="Bank Liquidity & Net Additions"
         actions={
           <Pill>
-            {registered} Registered
+            {`${registered} Registered`}
           </Pill>
         }
       />

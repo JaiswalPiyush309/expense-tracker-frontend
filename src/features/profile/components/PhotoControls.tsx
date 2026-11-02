@@ -8,7 +8,7 @@ import {
   PROFILE_PHOTO_MIME_TYPES,
 } from "../types";
 
-const ACCEPTED = PROFILE_PHOTO_MIME_TYPES;
+const ACCEPTED: readonly string[] = PROFILE_PHOTO_MIME_TYPES;
 
 interface PhotoControlsProps {
   hasPhoto: boolean;

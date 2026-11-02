@@ -380,7 +380,7 @@ export const lendingRows: LendingRow[] = [
     dueNote: "(15d Overdue)",
     overdue: true,
     status: { text: "Overdue", tone: "bad" },
-    action: { label: "Reminder", variant: "successSoft", icon: MessageSquare },
+    action: { label: "Reminder", variant: "soft", icon: MessageSquare },
   },
   {
     id: "vikram",

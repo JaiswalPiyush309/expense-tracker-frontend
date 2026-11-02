@@ -1,4 +1,4 @@
-import { AuthMode } from "@/types/auth";
+import type { AuthMode } from "@/features/auth/types";
 
 export const MIN_PASSWORD = 8;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -13,7 +13,7 @@ const API_BASE_URL = (
 ).replace(/\/+$/, "");
 
 export const MAX_PROFILE_PHOTO_BYTES = PROFILE_PHOTO_MAX_BYTES;
-const ACCEPTED_PHOTO_TYPES = new Set(PROFILE_PHOTO_MIME_TYPES);
+const ACCEPTED_PHOTO_TYPES = new Set<string>(PROFILE_PHOTO_MIME_TYPES);
 
 async function profileRequest<T>(endpoint = "", init?: RequestInit): Promise<T> {
   const token = getAccessToken();
