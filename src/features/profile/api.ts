@@ -16,9 +16,10 @@ async function profileRequest<T>(endpoint = "", init?: RequestInit): Promise<T> 
   const token = getAccessToken();
   if (!token) throw new Error("Your session has expired. Please sign in again.");
 
+  const apiBaseUrl = getApiBaseUrl();
   let response: Response;
   try {
-    response = await fetch(`${getApiBaseUrl()}/users/me${endpoint}`, {
+    response = await fetch(`${apiBaseUrl}/users/me${endpoint}`, {
       ...init,
       headers: {
         Accept: "application/json",

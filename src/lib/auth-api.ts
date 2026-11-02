@@ -36,10 +36,11 @@ async function postAuth<T>(
   endpoint: string,
   body: LoginRequest | RegisterRequest,
 ): Promise<T> {
+  const apiBaseUrl = getApiBaseUrl();
   let response: Response;
 
   try {
-    response = await fetch(`${getApiBaseUrl()}/auth/${endpoint}`, {
+    response = await fetch(`${apiBaseUrl}/auth/${endpoint}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
