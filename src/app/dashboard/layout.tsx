@@ -19,8 +19,8 @@ import {
   transactions,
   trendData,
   trendMeta,
-  user,
 } from "@/features/dashboard/data/mock";
+import { useAuthUser } from "@/hooks/useAuthUser";
 import { useState } from "react";
 import type { ReactNode } from "react";
 
@@ -31,6 +31,7 @@ export default function DashboardLayout({
 }>) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const { user: authUser } = useAuthUser();
 
   const expenses = stats.find((s) => s.id === "expenses")?.value ?? 0;
 
@@ -45,7 +46,7 @@ export default function DashboardLayout({
         <Navbar />
         <main className="mx-auto w-full max-w-350 space-y-6 p-4 sm:p-6">
           <WelcomeCard
-            name={user.name}
+            name={authUser?.name ?? "there"}
             netWorth={overview.netWorth}
             netWorthChange={overview.netWorthYoY}
             periodLabel={overview.periodLabel}

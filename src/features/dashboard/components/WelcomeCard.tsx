@@ -4,7 +4,13 @@ import { cn } from "@/lib/cn";
 import { formatINR } from "@/lib/format";
 import { toneSoft } from "@/lib/tone";
 import type { Tone } from "@/lib/tone";
-import { CircleMinus, CirclePlus, Download, Handshake } from "lucide-react";
+import {
+  ArrowDownToLine,
+  ArrowUpRight,
+  CircleMinus,
+  CirclePlus,
+  Handshake,
+} from "lucide-react";
 
 interface WelcomeCardProps {
   name: string;
@@ -35,76 +41,87 @@ export function WelcomeCard({
         : "neutral";
 
   return (
-    <Card className="flex flex-col gap-5 p-5 sm:p-6 lg:flex-row lg:items-start lg:justify-between">
-      <div className="min-w-0">
-        <h1 className="text-2xl font-bold text-ink sm:text-3xl">
-          Welcome back, {name} <span aria-hidden="true">👋</span>
+    <Card className="relative isolate flex flex-col gap-7 overflow-hidden p-5 sm:p-7 lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:p-8">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-24 -top-32 -z-10 h-80 w-80 rounded-full bg-accent/10 blur-3xl"
+      />
+      <div className="min-w-0 flex-1">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-accent">
+          Your financial snapshot
+        </p>
+        <h1 className="text-2xl font-bold leading-tight tracking-tight text-ink sm:text-3xl lg:text-[2.1rem]">
+          Welcome back, {name} <span className="inline-block" aria-hidden="true">👋</span>
         </h1>
 
         <p
           aria-label={`Net worth change: ${netWorthChange}`}
           className={cn(
-            "mt-2 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold",
+            "mt-4 inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-current/10 px-3.5 py-2 text-sm font-semibold sm:text-base",
             toneSoft[changeTone],
           )}
         >
           <span
             aria-hidden="true"
-            className="h-2 w-2 rounded-full bg-current"
+            className="h-2 w-2 shrink-0 rounded-full bg-current"
           />
-          Net Worth: {formatINR(netWorth, { decimals: false })}
-          <span className="font-medium tabular-nums opacity-80">
+          <span className="opacity-80">Net worth</span>
+          <span className="font-bold tabular-nums">
+            {formatINR(netWorth, { decimals: false })}
+          </span>
+          <span className="font-medium tabular-nums opacity-75">
             ({netWorthChange})
           </span>
         </p>
 
-        <p className="mt-3 max-w-xl text-sm text-muted sm:text-base">
-          Here is your unified financial health overview
-          {periodLabel ? ` for ${periodLabel}` : ""} across all bank accounts,
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
+          Your unified financial health overview
+          {periodLabel ? ` for ${periodLabel}` : ""}, across your accounts,
           investments, and personal ledgers.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap lg:max-w-108 lg:justify-end">
+      <div className="grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2 lg:w-auto lg:min-w-100 lg:max-w-112">
         <Button
           size="md"
           onClick={onAddExpense}
           disabled={!onAddExpense}
-          className="px-3 sm:px-5"
+          className="h-12 justify-start px-4 sm:px-5"
         >
-          <CircleMinus aria-hidden="true" className="h-4 w-4" />
+          <CircleMinus aria-hidden="true" className="h-[18px] w-[18px]" />
           Add Expense
         </Button>
         <Button
-          variant="soft"
+          variant="secondary"
           size="md"
           onClick={onAddIncome}
           disabled={!onAddIncome}
-          className="px-3 sm:px-5"
+          className="h-12 justify-start px-4 sm:px-5"
         >
-          <CirclePlus aria-hidden="true" className="h-4 w-4" />
+          <CirclePlus aria-hidden="true" className="h-[18px] w-[18px] text-accent" />
           Add Income
         </Button>
 
         <Button
-          variant="soft"
+          variant="secondary"
           size="md"
           onClick={onRecordLending}
           disabled={!onRecordLending}
-          className="px-3 text-ink sm:px-5"
+          className="h-12 justify-start px-4 sm:px-5"
         >
-          <Handshake aria-hidden="true" className="h-4 w-4 text-accent" />
+          <Handshake aria-hidden="true" className="h-[18px] w-[18px] text-accent" />
           Record Lending
         </Button>
         <Button
-          variant="soft"
+          variant="secondary"
           size="md"
           onClick={onImportStatement}
           disabled={!onImportStatement}
-          className="bg-surface-muted px-3 text-muted hover:text-ink sm:px-5"
+          className="h-12 justify-start px-4 sm:px-5"
         >
-          <Download aria-hidden="true" className="h-4 w-4" />
+          <ArrowDownToLine aria-hidden="true" className="h-[18px] w-[18px] text-accent" />
           Import Statement
+          <ArrowUpRight aria-hidden="true" className="ml-auto h-4 w-4 text-muted" />
         </Button>
       </div>
     </Card>
