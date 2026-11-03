@@ -65,7 +65,6 @@ export function Navbar({ onMenuToggle, onAddTransaction }: NavbarProps) {
         <UserProfileBadge
           name="Piyush Jaiswal" // TODO: replace with real user data
           badge="Premium Member"
-          avatarUrl="/avatar.jpg"
           isOnline
         />
       </div>

@@ -18,6 +18,18 @@ function initialsOf(name: string) {
   ).toUpperCase();
 }
 
+function isLocalImageUrl(src: string) {
+  try {
+    const url = new URL(src);
+    return (
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function ProfileAvatar({
   name,
   src,
@@ -42,8 +54,11 @@ export function ProfileAvatar({
           height={88}
           sizes="88px"
           onError={() => setImageFailed(true)}
-          // Local previews (blob:) can't go through the image optimiser.
-          unoptimized={imageSrc!.startsWith("blob:")}
+          // Local previews and loopback API URLs must bypass Next's optimizer.
+          // Next blocks optimizer requests to private IPs to prevent SSRF.
+          unoptimized={
+            imageSrc!.startsWith("blob:") || isLocalImageUrl(imageSrc!)
+          }
           className="h-full w-full rounded-2xl object-cover ring-1 ring-line"
         />
       ) : (

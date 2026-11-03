@@ -25,7 +25,7 @@ export const initialValues: ProfileValues = {
   city: "Bengaluru",
   pincode: "560103",
   bio: "Tracking personal cashflows, angel investments, equity portfolio, and freelance fintech advisory income.",
-  photoUrl: "/avatar.jpg",
+  photoUrl: null,
 };
 
 export const summary: ProfileSummary = {

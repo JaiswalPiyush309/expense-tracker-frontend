@@ -17,10 +17,18 @@ interface UserProfileBadgeProps {
   className?: string;
 }
 
+function initialsOf(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (
+    (parts[0]?.[0] ?? "") +
+    (parts.length > 1 ? parts[parts.length - 1][0] : "")
+  ).toUpperCase();
+}
+
 export function UserProfileBadge({
   name,
   badge,
-  avatarUrl = "/avatar.jpg",
+  avatarUrl,
   onClick,
   isOnline = true,
   showDetails = true,
@@ -45,13 +53,23 @@ export function UserProfileBadge({
     >
       {/* Avatar */}
       <span className="relative h-9 w-9 shrink-0">
-        <Image
-          src={avatarUrl}
-          alt={`${name}'s avatar`}
-          width={36}
-          height={36}
-          className="h-9 w-9 rounded-full object-cover ring-1 ring-line"
-        />
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={`${name}'s avatar`}
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-full object-cover ring-1 ring-line"
+          />
+        ) : (
+          <span
+            role="img"
+            aria-label={`${name}'s avatar`}
+            className="grid h-9 w-9 place-items-center rounded-full bg-accent-soft text-xs font-bold text-accent ring-1 ring-line"
+          >
+            {initialsOf(name) || "?"}
+          </span>
+        )}
 
         {isOnline && (
           <span
