@@ -82,8 +82,9 @@ export function MarketsCard({
         ))}
       </dl>
 
-      <ul className="mt-2 divide-y divide-line">
-        {holdings.map((h) => (
+      {holdings.length > 0 ? (
+        <ul className="mt-2 divide-y divide-line">
+          {holdings.map((h) => (
           <li
             key={h.id}
             className="flex items-start justify-between gap-3 py-3"
@@ -101,8 +102,13 @@ export function MarketsCard({
               <Change value={h.changePct} className="text-xs" />
             </div>
           </li>
-        ))}
-      </ul>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-5 rounded-xl bg-accent-soft/50 p-4 text-sm text-muted">
+          Holding details and market indices are not available from the dashboard summary yet.
+        </p>
+      )}
 
       <footer className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3 text-xs font-semibold">
         <Link

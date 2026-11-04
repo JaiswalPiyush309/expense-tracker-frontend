@@ -34,8 +34,9 @@ export function LendingLedgerCard({
         }
       />
 
-      <ul className="mt-5 space-y-2">
-        {entries.map((entry) => {
+      {entries.length > 0 ? (
+        <ul className="mt-5 space-y-2">
+          {entries.map((entry) => {
           const TagIcon = entry.tag?.icon;
           return (
             <li
@@ -119,8 +120,13 @@ export function LendingLedgerCard({
               </div>
             </li>
           );
-        })}
-      </ul>
+          })}
+        </ul>
+      ) : (
+        <p className="mt-5 rounded-xl bg-accent-soft/50 p-4 text-sm text-muted">
+          Detailed lending records will appear here once ledger details are available.
+        </p>
+      )}
     </Card>
   );
 }

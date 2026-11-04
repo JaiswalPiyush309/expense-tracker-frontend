@@ -48,6 +48,74 @@ export interface StatCardData {
   footerRight?: { text: string; tone: Tone };
 }
 
+export interface DashboardSummary {
+  period: {
+    month: number;
+    year: number;
+    monthLabel: string;
+    shortMonthLabel: string;
+  };
+  netWorthBanner: {
+    totalNetWorth: number;
+    yoyChangePercent: number;
+  };
+  liquidBalance: {
+    totalAmount: number;
+    momChangePercent: number;
+    linkedAccountsCount: number;
+    accountNames: string[];
+    isReconciled: boolean;
+  };
+  income: {
+    totalAmount: number;
+    momChangePercent: number;
+    topSources: { categoryName: string; amount: number }[];
+  };
+  expenses: {
+    totalAmount: number;
+    momChangePercent: number;
+    budgetLimit: number;
+    budgetSpentPercent: number;
+    statusLabel: string;
+  };
+  netCashFlow: {
+    netAmount: number;
+    savingsRatePercent: number;
+    targetSavingsRatePercent: number;
+    isTargetHit: boolean;
+  };
+  equitiesAndMfs: {
+    currentValue: number;
+    investedAmount: number;
+    totalPnL: number;
+    pnlPercent: number;
+    focusTags: string[];
+    isLiveSync: boolean;
+  };
+  moneyLent: {
+    totalReceivable: number;
+    overdueCount: number;
+    topOverdueItem: { counterpartyName: string; amount: number } | null;
+    activeBorrowersCount: number;
+  };
+  moneyBorrowed: {
+    totalLiability: number;
+    nextDueItem: {
+      counterpartyName: string;
+      daysRemaining: number;
+      dueDate: string;
+      note: string;
+    } | null;
+  };
+  sipsAndAutoDebits: {
+    totalMonthlyCommitment: number;
+    executedThisMonthCount: number;
+    totalActiveRulesCount: number;
+    nextExecutionDate: string | null;
+    highlightTitles: string[];
+  };
+}
+
 export type TrendRange = "monthly" | "weekly" | "daily";
 
 export interface TrendPoint {
