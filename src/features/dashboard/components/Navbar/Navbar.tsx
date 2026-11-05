@@ -10,6 +10,7 @@ import { NotificationButton } from "./NotificationButton";
 import { Button } from "@/components/ui/Button";
 import { UserProfileBadge } from "./UserProfileBadge";
 import AddTransactionDialog from "@/components/transactions/add-transaction/AddTransactionDialog";
+import { useRouter } from "next/navigation";
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -20,6 +21,7 @@ export function Navbar({ onMenuToggle, onAddTransaction }: NavbarProps) {
   const [search, setSearch] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [addTransactionOpen, setAddTransactionOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center gap-2 border-b border-line bg-surface/90 px-3 backdrop-blur sm:gap-3 sm:px-6">
@@ -72,6 +74,7 @@ export function Navbar({ onMenuToggle, onAddTransaction }: NavbarProps) {
           name="Piyush Jaiswal" // TODO: replace with real user data
           badge="Premium Member"
           isOnline
+          onClick={() => router.push("/profile")}
         />
       </div>
 
