@@ -17,6 +17,7 @@ import { IdentityForm } from "./components/IdentityForm";
 import { KycCard } from "./components/KycCard";
 import { DesignationCard } from "./components/DesignationCard";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { BankAccountsCard } from "./components/BankAccountsCard";
 
 const TABS: readonly { value: ProfileTab; label: string }[] = [
   { value: "personal", label: "Personal Information" },
@@ -168,6 +169,8 @@ function ProfileContent({
               <DesignationCard items={designations} />
             </div>
           </div>
+        ) : tab === "financial" ? (
+          <BankAccountsCard />
         ) : (
           <EmptyState
             icon={
