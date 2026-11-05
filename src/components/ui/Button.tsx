@@ -9,12 +9,16 @@ const variants = {
   soft: "bg-accent-soft text-accent hover:brightness-[0.97] active:translate-y-px",
   ghost: "bg-transparent text-muted hover:bg-surface-muted hover:text-ink",
   danger: "bg-bad text-accent-ink hover:brightness-95 active:translate-y-px",
+  accent:
+    "bg-indigo-700 text-white shadow-md shadow-indigo-500/20 hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-500",
+  success: "bg-emerald-600 text-white hover:bg-emerald-700",
 } as const;
 
 const sizes = {
   sm: "min-h-9 px-4 py-2 text-xs",
   md: "min-h-11 px-5 py-2.5 text-sm",
   icon: "h-10 w-10 p-0 text-sm",
+  base: "px-5 py-2.5 text-sm",
 } as const;
 
 export interface ButtonProps extends ComponentProps<"button"> {

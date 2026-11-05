@@ -9,6 +9,7 @@ import ThemeToggle from "@/components/common/ThemeToggle";
 import { NotificationButton } from "./NotificationButton";
 import { Button } from "@/components/ui/Button";
 import { UserProfileBadge } from "./UserProfileBadge";
+import AddTransactionDialog from "@/components/transactions/add-transaction/AddTransactionDialog";
 
 interface NavbarProps {
   onMenuToggle?: () => void;
@@ -18,6 +19,7 @@ interface NavbarProps {
 export function Navbar({ onMenuToggle, onAddTransaction }: NavbarProps) {
   const [search, setSearch] = useState("");
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [addTransactionOpen, setAddTransactionOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center gap-2 border-b border-line bg-surface/90 px-3 backdrop-blur sm:gap-3 sm:px-6">
@@ -52,9 +54,13 @@ export function Navbar({ onMenuToggle, onAddTransaction }: NavbarProps) {
         <Button
           variant="primary"
           size="sm"
-          onClick={onAddTransaction}
+          onClick={() => {
+            onAddTransaction?.();
+            setAddTransactionOpen(true);
+          }}
           aria-label="Add transaction"
           className="shrink-0 gap-1.5 whitespace-nowrap px-2.5 md:px-3.5"
+          // className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-indigo-700"
         >
           <Plus className="h-4 w-4" />
           <span className="hidden md:inline">Add Transaction</span>
@@ -68,6 +74,13 @@ export function Navbar({ onMenuToggle, onAddTransaction }: NavbarProps) {
           isOnline
         />
       </div>
+
+      {addTransactionOpen && (
+        <AddTransactionDialog
+          isOpen={addTransactionOpen}
+          onClose={() => setAddTransactionOpen(false)}
+        />
+      )}
 
       {/* Mobile search overlay */}
       {mobileSearchOpen && (
