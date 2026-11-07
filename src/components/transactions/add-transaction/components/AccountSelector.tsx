@@ -1,16 +1,19 @@
 "use client";
 
-import { BANK_ACCOUNTS } from "../model/data";
 import { formatINRNumber } from "../model/utils";
+import type { BankAccountOption } from "../model/types";
 
 interface AccountSelectorProps {
   accountId: string;
+  accounts: BankAccountOption[];
+  loading: boolean;
+  error: string;
   onChange: (accountId: string) => void;
 }
 
-export function AccountSelector({ accountId, onChange }: AccountSelectorProps) {
+export function AccountSelector({ accountId, accounts, loading, error, onChange }: AccountSelectorProps) {
   const currentAccount =
-    BANK_ACCOUNTS.find((a) => a.id === accountId) ?? BANK_ACCOUNTS[0];
+    accounts.find((a) => a.id === accountId);
 
   return (
     <div>
@@ -19,7 +22,7 @@ export function AccountSelector({ accountId, onChange }: AccountSelectorProps) {
           Account / Payment Source
         </label>
         <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-          Bal: ₹{formatINRNumber(currentAccount.balance, 0, 0)}
+          {currentAccount ? `Bal: ₹${formatINRNumber(currentAccount.balance, 0, 0)}` : ""}
         </span>
       </div>
 
@@ -36,15 +39,17 @@ export function AccountSelector({ accountId, onChange }: AccountSelectorProps) {
         <select
           value={accountId}
           onChange={(e) => onChange(e.target.value)}
+          disabled={loading || accounts.length === 0}
           className="w-full appearance-none bg-transparent pr-5 text-xs font-medium text-slate-800 outline-none dark:text-slate-200"
         >
-          {BANK_ACCOUNTS.map((acc) => (
+          {accounts.length === 0 && <option value="">{loading ? "Loading accounts…" : "No accounts available"}</option>}
+          {accounts.map((acc) => (
             <option
               key={acc.id}
               value={acc.id}
               className="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100"
             >
-              {acc.bankName} {acc.maskedNumber} ({acc.accountType})
+              {acc.shortLabel} · {acc.bankName}{acc.maskedNumber ? ` ${acc.maskedNumber}` : ""} ({acc.accountType})
             </option>
           ))}
         </select>
@@ -58,6 +63,8 @@ export function AccountSelector({ accountId, onChange }: AccountSelectorProps) {
           <path d="M7 15l5 5 5-5M7 9l5-5 5 5" />
         </svg>
       </div>
+      {error && <p role="alert" className="mt-1 text-[11px] text-rose-600">{error}</p>}
+      {!loading && !error && accounts.length === 0 && <p className="mt-1 text-[11px] text-slate-500">Add an account in Profile before recording a transaction.</p>}
     </div>
   );
 }

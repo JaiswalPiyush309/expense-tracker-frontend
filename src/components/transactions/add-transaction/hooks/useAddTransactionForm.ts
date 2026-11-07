@@ -1,18 +1,16 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AddTransactionFormValues,
   AttachedInvoice,
   TransactionTag,
   TransactionType,
 } from "../model/types";
-import {
-  BANK_ACCOUNTS,
-  createInitialTransactionForm,
-  TRANSACTION_CATEGORIES,
-} from "../model/data";
+import { createInitialTransactionForm, TRANSACTION_CATEGORIES } from "../model/data";
 import { inferMerchantFromTitle } from "../model/utils";
+import { getAccountDropdownOptions } from "@/features/profile/accounts-api";
+import type { BankAccountOption } from "../model/types";
 
 export function useAddTransactionForm(
   onSuccess?: (values: AddTransactionFormValues) => void,
@@ -22,12 +20,45 @@ export function useAddTransactionForm(
   );
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [accounts, setAccounts] = useState<BankAccountOption[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(true);
+  const [accountsError, setAccountsError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    getAccountDropdownOptions()
+      .then((result) => {
+        if (!active) return;
+        const options = result.map((account) => ({
+          id: account.id,
+          bankName: account.bankName ?? account.name,
+          maskedNumber: account.accountNumberLast4 ? `••${account.accountNumberLast4}` : "",
+          accountType: account.type.replaceAll("_", " "),
+          balance: Number(account.currentBalance),
+          shortLabel: account.name,
+        }));
+        setAccounts(options);
+        const defaultId = result.find((account) => account.isDefault)?.id ?? options[0]?.id ?? "";
+        setValues((current) => ({
+          ...current,
+          accountId: options.some((account) => account.id === current.accountId)
+            ? current.accountId
+            : defaultId,
+        }));
+      })
+      .catch((error: unknown) => {
+        if (active) setAccountsError(error instanceof Error ? error.message : "Unable to load accounts.");
+      })
+      .finally(() => {
+        if (active) setAccountsLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
 
   const selectedAccount = useMemo(
     () =>
-      BANK_ACCOUNTS.find((acc) => acc.id === values.accountId) ??
-      BANK_ACCOUNTS[0],
-    [values.accountId],
+      accounts.find((acc) => acc.id === values.accountId) ?? accounts[0],
+    [accounts, values.accountId],
   );
 
   const selectedCategory = useMemo(
@@ -41,10 +72,11 @@ export function useAddTransactionForm(
     return (
       values.amount > 0 &&
       values.title.trim().length > 0 &&
+      accounts.length > 0 &&
       Boolean(values.accountId) &&
       Boolean(values.categoryId)
     );
-  }, [values.amount, values.title, values.accountId, values.categoryId]);
+  }, [accounts.length, values.amount, values.title, values.accountId, values.categoryId]);
 
   const updateField = useCallback(
     <K extends keyof AddTransactionFormValues>(
@@ -131,6 +163,9 @@ export function useAddTransactionForm(
   return {
     values,
     selectedAccount,
+    accounts,
+    accountsLoading,
+    accountsError,
     selectedCategory,
     isDetailsExpanded,
     setIsDetailsExpanded,

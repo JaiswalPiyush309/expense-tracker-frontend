@@ -1,6 +1,5 @@
 import type {
   AddTransactionFormValues,
-  BankAccountOption,
   CategoryOption,
   TransactionType,
 } from "./types";
@@ -50,33 +49,6 @@ export const TRANSACTION_TYPES: {
 ];
 
 export const QUICK_ADD_AMOUNTS = [100, 500, 1000, 2000, 5000];
-
-export const BANK_ACCOUNTS: BankAccountOption[] = [
-  {
-    id: "hdfc-salary",
-    bankName: "HDFC Bank",
-    maskedNumber: "••4821",
-    accountType: "Salary Acct",
-    balance: 342150,
-    shortLabel: "HDFC Salary A/c",
-  },
-  {
-    id: "icici-wealth",
-    bankName: "ICICI Bank",
-    maskedNumber: "••9014",
-    accountType: "Wealth Savings",
-    balance: 518400,
-    shortLabel: "ICICI Wealth A/c",
-  },
-  {
-    id: "sbi-primary",
-    bankName: "SBI",
-    maskedNumber: "••1108",
-    accountType: "Savings Acct",
-    balance: 94320,
-    shortLabel: "SBI Savings A/c",
-  },
-];
 
 export const TRANSACTION_CATEGORIES: CategoryOption[] = [
   {
@@ -134,7 +106,7 @@ export function createInitialTransactionForm(): AddTransactionFormValues {
   title: "",
   date,
   time: "",
-  accountId: "hdfc-salary",
+  accountId: "",
   categoryId: "",
   merchant: "",
   isAutoTagged: false,

@@ -38,6 +38,20 @@ export interface BankAccount {
   isArchived: boolean;
 }
 
+export interface AccountDropdownOption {
+  id: string;
+  name: string;
+  bankName: string | null;
+  type: AccountType;
+  accountNumberLast4: string | null;
+  displayLabel: string;
+  currentBalance: number;
+  currency: string;
+  isDefault: boolean;
+  color: string | null;
+  icon: string | null;
+}
+
 export interface CreateBankAccountInput {
   bankCode: string;
   name?: string;
@@ -93,6 +107,10 @@ export function getSupportedBanks() {
 
 export function getBankAccounts() {
   return accountRequest<BankAccount[]>("");
+}
+
+export function getAccountDropdownOptions() {
+  return accountRequest<AccountDropdownOption[]>("/options");
 }
 
 export function createBankAccount(input: CreateBankAccountInput) {

@@ -15,6 +15,9 @@ interface TransactionFormFieldsProps {
     field: K,
     value: AddTransactionFormValues[K],
   ) => void;
+  accounts: import("../model/types").BankAccountOption[];
+  accountsLoading: boolean;
+  accountsError: string;
   onAddTag: (label: string) => void;
   onRemoveTag: (id: string) => void;
   onAttachmentChange: (attachment: AttachedInvoice | null) => void;
@@ -25,6 +28,9 @@ export function TransactionFormFields({
   isDetailsExpanded,
   onToggleDetails,
   updateField,
+  accounts,
+  accountsLoading,
+  accountsError,
   onAddTag,
   onRemoveTag,
   onAttachmentChange,
@@ -76,6 +82,9 @@ export function TransactionFormFields({
 
         <AccountSelector
           accountId={values.accountId}
+          accounts={accounts}
+          loading={accountsLoading}
+          error={accountsError}
           onChange={(id) => updateField("accountId", id)}
         />
       </div>

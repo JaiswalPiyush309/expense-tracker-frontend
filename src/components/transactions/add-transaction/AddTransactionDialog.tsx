@@ -23,6 +23,9 @@ export default function AddTransactionDialog({
   const {
     values,
     selectedAccount,
+    accounts,
+    accountsLoading,
+    accountsError,
     isDetailsExpanded,
     setIsDetailsExpanded,
     isLedgerValid,
@@ -111,7 +114,7 @@ export default function AddTransactionDialog({
           <TransactionAmountInput
             amount={values.amount}
             type={values.type}
-            accountShortLabel={selectedAccount.shortLabel}
+            accountShortLabel={selectedAccount?.shortLabel ?? "Account"}
             onChange={(val) => updateField("amount", val)}
             onQuickAdd={addQuickAmount}
             onClear={clearAmount}
@@ -123,6 +126,9 @@ export default function AddTransactionDialog({
             isDetailsExpanded={isDetailsExpanded}
             onToggleDetails={() => setIsDetailsExpanded((prev) => !prev)}
             updateField={updateField}
+            accounts={accounts}
+            accountsLoading={accountsLoading}
+            accountsError={accountsError}
             onAddTag={addTag}
             onRemoveTag={removeTag}
             onAttachmentChange={setAttachment}
