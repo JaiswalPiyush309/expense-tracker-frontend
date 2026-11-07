@@ -50,7 +50,7 @@ export const sidebarGroups: SidebarGroup[] = [
       },
       {
         label: "Income",
-        href: "/dashboard/income",
+        href: "/income",
         icon: ArrowDown,
       },
       {
