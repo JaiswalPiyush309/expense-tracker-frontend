@@ -16,6 +16,10 @@ import { INCOME_TRANSACTIONS_MOCK } from "./data/mock";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction";
 import { useIncomeFilters } from "./hooks/useIncomeFilters";
 import { IncomeFilterToolbar } from "./components/IncomeFilterToolbar";
+import { IncomeSummaryBanner } from "./components/IncomeSummaryBanner";
+import { IncomeKpiGrid } from "./components/IncomeKpiGrid";
+import { IncomeBySourceCard } from "./components/IncomeBySourceCard";
+import { InflowVelocityCard } from "./components/InflowVelocityCard";
 
 const currency = (value: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -174,6 +178,18 @@ export function IncomeView() {
         }
         onReset={resetFilters}
       />
+
+      {/* Filtered Total Inflow & NSDL Sync Banner */}
+      <IncomeSummaryBanner />
+
+      {/* 6-Card KPI Strip */}
+      <IncomeKpiGrid />
+
+      {/* 2-Column Analytics Section: Source Donut + Inflow Velocity */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <IncomeBySourceCard />
+        <InflowVelocityCard />
+      </div>
     </main>
   );
 }
