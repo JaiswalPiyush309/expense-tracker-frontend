@@ -6,6 +6,7 @@ import { PaymentMethodSelector } from "./PaymentMethodSelector";
 import { TransactionCategorySelector } from "./TransactionCategorySelector";
 import { TransactionDatePicker } from "./TransactionDatePicker";
 import { AddTransactionFormValues, AttachedInvoice } from "../model/types";
+import type { CategoryOption } from "@/features/categories/categories-api";
 
 interface TransactionFormFieldsProps {
   values: AddTransactionFormValues;
@@ -18,6 +19,9 @@ interface TransactionFormFieldsProps {
   accounts: import("../model/types").BankAccountOption[];
   accountsLoading: boolean;
   accountsError: string;
+  categories: CategoryOption[];
+  categoriesLoading: boolean;
+  categoriesError: string;
   onAddTag: (label: string) => void;
   onRemoveTag: (id: string) => void;
   onAttachmentChange: (attachment: AttachedInvoice | null) => void;
@@ -31,6 +35,9 @@ export function TransactionFormFields({
   accounts,
   accountsLoading,
   accountsError,
+  categories,
+  categoriesLoading,
+  categoriesError,
   onAddTag,
   onRemoveTag,
   onAttachmentChange,
@@ -93,6 +100,9 @@ export function TransactionFormFields({
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
         <TransactionCategorySelector
           categoryId={values.categoryId}
+          categories={categories}
+          loading={categoriesLoading}
+          error={categoriesError}
           onChange={(id) => updateField("categoryId", id)}
         />
         <PaymentMethodSelector

@@ -7,10 +7,11 @@ import {
   TransactionTag,
   TransactionType,
 } from "../model/types";
-import { createInitialTransactionForm, TRANSACTION_CATEGORIES } from "../model/data";
+import { createInitialTransactionForm } from "../model/data";
 import { inferMerchantFromTitle } from "../model/utils";
 import { getAccountDropdownOptions } from "@/features/profile/accounts-api";
 import type { BankAccountOption } from "../model/types";
+import { getCategoryOptions, type CategoryOption, type CategoryType } from "@/features/categories/categories-api";
 
 export function useAddTransactionForm(
   onSuccess?: (values: AddTransactionFormValues) => void,
@@ -23,6 +24,9 @@ export function useAddTransactionForm(
   const [accounts, setAccounts] = useState<BankAccountOption[]>([]);
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [accountsError, setAccountsError] = useState("");
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categoriesError, setCategoriesError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -55,17 +59,36 @@ export function useAddTransactionForm(
     return () => { active = false; };
   }, []);
 
+  const categoryType: CategoryType = values.type === "income" || values.type === "borrowing" ? "INCOME" : "EXPENSE";
+  useEffect(() => {
+    let active = true;
+    setCategoriesLoading(true);
+    setCategoriesError("");
+    setCategories([]);
+    getCategoryOptions(categoryType)
+      .then((result) => {
+        if (!active) return;
+        setCategories(result);
+        setValues((current) => ({
+          ...current,
+          categoryId: result.some((category) => category.id === current.categoryId)
+            ? current.categoryId
+            : "",
+        }));
+      })
+      .catch((error: unknown) => {
+        if (active) setCategoriesError(error instanceof Error ? error.message : "Unable to load categories.");
+      })
+      .finally(() => {
+        if (active) setCategoriesLoading(false);
+      });
+    return () => { active = false; };
+  }, [categoryType]);
+
   const selectedAccount = useMemo(
     () =>
       accounts.find((acc) => acc.id === values.accountId) ?? accounts[0],
     [accounts, values.accountId],
-  );
-
-  const selectedCategory = useMemo(
-    () =>
-      TRANSACTION_CATEGORIES.find((cat) => cat.id === values.categoryId) ??
-      TRANSACTION_CATEGORIES[0],
-    [values.categoryId],
   );
 
   const isLedgerValid = useMemo(() => {
@@ -74,9 +97,10 @@ export function useAddTransactionForm(
       values.title.trim().length > 0 &&
       accounts.length > 0 &&
       Boolean(values.accountId) &&
+      categories.length > 0 &&
       Boolean(values.categoryId)
     );
-  }, [accounts.length, values.amount, values.title, values.accountId, values.categoryId]);
+  }, [accounts.length, categories.length, values.amount, values.title, values.accountId, values.categoryId]);
 
   const updateField = useCallback(
     <K extends keyof AddTransactionFormValues>(
@@ -166,7 +190,9 @@ export function useAddTransactionForm(
     accounts,
     accountsLoading,
     accountsError,
-    selectedCategory,
+    categories,
+    categoriesLoading,
+    categoriesError,
     isDetailsExpanded,
     setIsDetailsExpanded,
     isLedgerValid,

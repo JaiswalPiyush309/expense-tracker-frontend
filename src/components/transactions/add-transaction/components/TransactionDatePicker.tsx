@@ -33,11 +33,12 @@ export function TransactionDatePicker({
             <line x1="3" y1="10" x2="21" y2="10" />
           </svg>
           <input
-            type="text"
+            type="date"
             value={date}
             onChange={(e) => onDateChange(e.target.value)}
+            aria-label="Transaction date"
+            required
             className="w-full bg-transparent text-xs font-medium text-slate-800 outline-none dark:text-slate-200"
-            placeholder="DD MMM YYYY"
           />
         </div>
 
@@ -53,11 +54,12 @@ export function TransactionDatePicker({
             <polyline points="12 7 12 12 15 15" />
           </svg>
           <input
-            type="text"
+            type="time"
             value={time}
             onChange={(e) => onTimeChange(e.target.value)}
+            aria-label="Transaction time"
+            required
             className="w-full bg-transparent text-xs font-medium text-slate-800 outline-none dark:text-slate-200"
-            placeholder="08:30 PM"
           />
         </div>
       </div>

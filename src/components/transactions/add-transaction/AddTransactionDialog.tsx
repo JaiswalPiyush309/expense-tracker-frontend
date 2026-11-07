@@ -26,6 +26,9 @@ export default function AddTransactionDialog({
     accounts,
     accountsLoading,
     accountsError,
+    categories,
+    categoriesLoading,
+    categoriesError,
     isDetailsExpanded,
     setIsDetailsExpanded,
     isLedgerValid,
@@ -129,6 +132,9 @@ export default function AddTransactionDialog({
             accounts={accounts}
             accountsLoading={accountsLoading}
             accountsError={accountsError}
+            categories={categories}
+            categoriesLoading={categoriesLoading}
+            categoriesError={categoriesError}
             onAddTag={addTag}
             onRemoveTag={removeTag}
             onAttachmentChange={setAttachment}
