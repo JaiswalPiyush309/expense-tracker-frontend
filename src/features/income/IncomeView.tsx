@@ -1,149 +1,86 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { ReactNode } from "react";
-import {
-  ArrowDownLeft,
-  ArrowUpRight,
-  Banknote,
-  Download,
-  Plus,
-  Search,
-  Wallet,
-} from "lucide-react";
-import { IncomeHeader } from "./components/IncomeHeader";
-import { INCOME_TRANSACTIONS_MOCK } from "./data/mock";
+import { useEffect, useMemo, useState } from "react";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction";
-import { useIncomeFilters } from "./hooks/useIncomeFilters";
+import { IncomeHeader } from "./components/IncomeHeader";
 import { IncomeFilterToolbar } from "./components/IncomeFilterToolbar";
 import { IncomeSummaryBanner } from "./components/IncomeSummaryBanner";
 import { IncomeKpiGrid } from "./components/IncomeKpiGrid";
 import { IncomeBySourceCard } from "./components/IncomeBySourceCard";
 import { InflowVelocityCard } from "./components/InflowVelocityCard";
-
-const currency = (value: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(value);
+import { IncomeTabsToolbar, type IncomeLedgerTab } from "./components/IncomeTabsToolbar";
+import { IncomeLedgerTable } from "./components/IncomeLedgerTable";
+import { useIncomeAnalytics } from "./hooks/useIncomeAnalytics";
 
 export function IncomeView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All categories");
-  const [mode, setMode] = useState("All methods");
-  const [status, setStatus] = useState("All statuses");
-  const [sort, setSort] = useState("Newest first");
+  const [datePreset, setDatePreset] = useState("this-month");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [modeFilter, setModeFilter] = useState("All");
+  const [accountFilter, setAccountFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("Received");
+  const [activeTab, setActiveTab] = useState<IncomeLedgerTab>("all");
+  const [sortBy, setSortBy] = useState("Date (Newest)");
+  const [pageSize, setPageSize] = useState(15);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const { transactions, isLoading, error } = useIncomeAnalytics();
 
-  const {
-    datePreset,
-    setDatePreset,
-    searchQuery,
-    setSearchQuery,
-    categoryFilter,
-    setCategoryFilter,
-    modeFilter,
-    setModeFilter,
-    accountFilter,
-    setAccountFilter,
-    statusFilter,
-    setStatusFilter,
-    activeTab,
-    setActiveTab,
-    sortBy,
-    setSortBy,
-    pageSize,
-    setPageSize,
-    currentPage,
-    setCurrentPage,
-    selectedIds,
-    toggleSelectAll,
-    toggleSelectRow,
-    filteredTransactions,
-    resetFilters,
-  } = useIncomeFilters();
+  const filteredTransactions = useMemo(() => transactions
+    .filter((item) => {
+      const query = searchQuery.trim().toLowerCase();
+      if (query && !`${item.merchant ?? ""} ${item.note ?? ""} ${item.category?.name ?? ""} ${item.account?.name ?? ""}`.toLowerCase().includes(query)) return false;
+      if (categoryFilter !== "All" && item.category?.id !== categoryFilter) return false;
+      if (accountFilter !== "All" && item.account?.id !== accountFilter) return false;
+      if (activeTab === "uncategorized" && item.category) return false;
+      // The current transaction API has no persisted payment-mode or pending status fields.
+      if (statusFilter === "Pending") return false;
+      return true;
+    })
+    .sort((a, b) => sortBy === "Amount (High to Low)"
+      ? Number(b.amount) - Number(a.amount)
+      : new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime()),
+  [transactions, searchQuery, categoryFilter, accountFilter, activeTab, sortBy, statusFilter]);
 
-  const categories = useMemo(
-    () => [...new Set(INCOME_TRANSACTIONS_MOCK.map((item) => item.category))],
-    [],
-  );
-  const filtered = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    return INCOME_TRANSACTIONS_MOCK.filter(
-      (item) =>
-        !normalizedQuery ||
-        `${item.payerName} ${item.description} ${item.channelRef}`
-          .toLowerCase()
-          .includes(normalizedQuery),
-    )
-      .filter(
-        (item) => category === "All categories" || item.category === category,
-      )
-      .filter((item) => mode === "All methods" || item.mode === mode)
-      .filter((item) => status === "All statuses" || item.status === status)
-      .sort((a, b) =>
-        sort === "Highest amount"
-          ? b.amount - a.amount
-          : sort === "Lowest amount"
-            ? a.amount - b.amount
-            : sort === "Oldest first"
-              ? Date.parse(a.date) - Date.parse(b.date)
-              : Date.parse(b.date) - Date.parse(a.date),
-      );
-  }, [category, mode, query, sort, status]);
+  const pageCount = Math.max(1, Math.ceil(filteredTransactions.length / pageSize));
+  const pageItems = useMemo(() => filteredTransactions.slice((currentPage - 1) * pageSize, currentPage * pageSize), [filteredTransactions, currentPage, pageSize]);
+  const uncategorizedCount = transactions.filter((item) => !item.category).length;
 
-  const received = INCOME_TRANSACTIONS_MOCK.filter(
-    (item) => item.status === "Received",
-  ).reduce((sum, item) => sum + item.amount, 0);
-  const pending = INCOME_TRANSACTIONS_MOCK.filter(
-    (item) => item.status === "Pending",
-  ).reduce((sum, item) => sum + item.amount, 0);
-  const sources = new Set(
-    INCOME_TRANSACTIONS_MOCK.map((item) => item.payerName),
-  ).size;
-  const sourceBreakdown = useMemo(() => {
-    const totals = new Map<string, number>();
-    INCOME_TRANSACTIONS_MOCK.filter(
-      (item) => item.status === "Received",
-    ).forEach((item) =>
-      totals.set(item.category, (totals.get(item.category) ?? 0) + item.amount),
-    );
-    return [...totals.entries()].sort((a, b) => b[1] - a[1]);
-  }, []);
-  const largestSourceTotal = sourceBreakdown[0]?.[1] ?? 1;
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, categoryFilter, modeFilter, accountFilter, statusFilter, activeTab, sortBy, pageSize]);
+  useEffect(() => { setCurrentPage((page) => Math.min(page, pageCount)); }, [pageCount]);
+
+  const toggleSelectAll = () => {
+    const pageIds = pageItems.map((item) => item.id);
+    const allSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+    setSelectedIds((current) => allSelected ? current.filter((id) => !pageIds.includes(id)) : [...new Set([...current, ...pageIds])]);
+  };
+  const toggleSelectRow = (id: string) => setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+  const resetFilters = () => {
+    setDatePreset("this-month");
+    setSearchQuery("");
+    setCategoryFilter("All");
+    setModeFilter("All");
+    setAccountFilter("All");
+    setStatusFilter("Received");
+    setActiveTab("all");
+    setSortBy("Date (Newest)");
+    setSelectedIds([]);
+  };
 
   const exportCsv = () => {
     const rows = [
-      [
-        "Date",
-        "Payer",
-        "Description",
-        "Category",
-        "Method",
-        "Account",
-        "Amount",
-        "Status",
-      ],
-      ...filtered.map((item) => [
-        item.date,
-        item.payerName,
-        item.description,
-        item.category,
-        item.mode,
-        `${item.accountTitle} ${item.accountMask}`.trim(),
+      ["Date", "Description", "Category", "Account", "Amount"],
+      ...filteredTransactions.map((item) => [
+        item.transactionDate,
+        item.merchant ?? item.note ?? "Income",
+        item.category?.name ?? "Uncategorized",
+        item.account?.name ?? "",
         String(item.amount),
-        item.status,
       ]),
     ];
-    const csv = rows
-      .map((row) =>
-        row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
-      )
-      .join("\r\n");
-    const url = URL.createObjectURL(
-      new Blob([csv], { type: "text/csv;charset=utf-8" }),
-    );
+    const csv = rows.map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(",")).join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
     link.download = "income-ledger.csv";
@@ -153,12 +90,7 @@ export function IncomeView() {
 
   return (
     <main className="mx-auto w-full max-w-350 space-y-6 p-4 pb-10 sm:p-6">
-      <IncomeHeader
-        onOpenAddIncome={() => setIsAddModalOpen(true)}
-        onExportCsv={exportCsv}
-      />
-
-      {/* Date Presets & Search Filter Bar */}
+      <IncomeHeader onOpenAddIncome={() => setIsAddModalOpen(true)} onExportCsv={exportCsv} />
       <IncomeFilterToolbar
         datePreset={datePreset}
         onDatePresetChange={setDatePreset}
@@ -171,25 +103,29 @@ export function IncomeView() {
         accountFilter={accountFilter}
         onAccountChange={setAccountFilter}
         statusFilter={statusFilter}
-        onStatusToggle={() =>
-          setStatusFilter((prev) =>
-            prev === "Received" ? "Pending" : "Received",
-          )
-        }
+        onStatusToggle={() => setStatusFilter((current) => current === "Received" ? "Pending" : "Received")}
         onReset={resetFilters}
       />
-
-      {/* Filtered Total Inflow & NSDL Sync Banner */}
       <IncomeSummaryBanner />
-
-      {/* 6-Card KPI Strip */}
       <IncomeKpiGrid />
-
-      {/* 2-Column Analytics Section: Source Donut + Inflow Velocity */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <IncomeBySourceCard />
-        <InflowVelocityCard />
-      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2"><IncomeBySourceCard /><InflowVelocityCard /></div>
+      <IncomeTabsToolbar activeTab={activeTab} onTabChange={setActiveTab} totalCount={transactions.length} uncategorizedCount={uncategorizedCount} />
+      <IncomeLedgerTable
+        items={pageItems}
+        total={filteredTransactions.length}
+        selectedIds={selectedIds}
+        onToggleSelectAll={toggleSelectAll}
+        onToggleSelectRow={toggleSelectRow}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        isLoading={isLoading}
+        error={error}
+      />
+      <AddTransactionDialog isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} initialType="income" />
     </main>
   );
 }
