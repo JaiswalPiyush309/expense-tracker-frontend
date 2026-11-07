@@ -36,6 +36,7 @@ export default function AddTransactionDialog({
     setIsDetailsExpanded,
     isLedgerValid,
     isSubmitting,
+    submitError,
     updateField,
     setTransactionType,
     addQuickAmount,
@@ -142,6 +143,12 @@ export default function AddTransactionDialog({
             onRemoveTag={removeTag}
             onAttachmentChange={setAttachment}
           />
+
+          {submitError && (
+            <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+              {submitError}
+            </p>
+          )}
 
           </div>
 

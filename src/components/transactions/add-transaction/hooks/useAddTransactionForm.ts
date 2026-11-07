@@ -12,6 +12,7 @@ import { inferMerchantFromTitle } from "../model/utils";
 import { getAccountDropdownOptions } from "@/features/profile/accounts-api";
 import type { BankAccountOption } from "../model/types";
 import { getCategoryOptions, type CategoryOption, type CategoryType } from "@/features/categories/categories-api";
+import { createTransaction, type ApiTransactionType } from "@/features/transactions/transactions-api";
 
 export function useAddTransactionForm(
   onSuccess?: (values: AddTransactionFormValues) => void,
@@ -22,6 +23,7 @@ export function useAddTransactionForm(
   );
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [accounts, setAccounts] = useState<BankAccountOption[]>([]);
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [accountsError, setAccountsError] = useState("");
@@ -109,10 +111,12 @@ export function useAddTransactionForm(
       values.title.trim().length > 0 &&
       accounts.length > 0 &&
       Boolean(values.accountId) &&
+      Boolean(values.date) &&
+      Boolean(values.time) &&
       categories.length > 0 &&
       Boolean(values.categoryId)
     );
-  }, [accounts.length, categories.length, values.amount, values.title, values.accountId, values.categoryId]);
+  }, [accounts.length, categories.length, values.amount, values.title, values.accountId, values.categoryId, values.date, values.time]);
 
   const updateField = useCallback(
     <K extends keyof AddTransactionFormValues>(
@@ -131,6 +135,7 @@ export function useAddTransactionForm(
         if (field === "merchant") next.isAutoTagged = false;
         return next;
       });
+      setSubmitError("");
     },
     [],
   );
@@ -181,6 +186,7 @@ export function useAddTransactionForm(
     const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
     const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     setValues({ ...createInitialTransactionForm(initialType), date, time });
+    setSubmitError("");
   }, [initialType]);
 
   const handleSubmit = useCallback(
@@ -189,9 +195,33 @@ export function useAddTransactionForm(
       if (!isLedgerValid) return;
 
       setIsSubmitting(true);
+      setSubmitError("");
       try {
-        await new Promise((resolve) => setTimeout(resolve, 350));
+        const typeMap: Partial<Record<TransactionType, ApiTransactionType>> = {
+          income: "INCOME",
+          expense: "EXPENSE",
+        };
+        const apiType = typeMap[values.type];
+        if (!apiType) {
+          throw new Error("This transaction type is not supported by the backend yet.");
+        }
+        const transactionDate = new Date(`${values.date}T${values.time}:00`);
+        if (Number.isNaN(transactionDate.getTime())) {
+          throw new Error("Enter a valid transaction date and time.");
+        }
+        await createTransaction({
+          accountId: values.accountId,
+          categoryId: values.categoryId,
+          type: apiType,
+          amount: values.amount,
+          transactionDate: transactionDate.toISOString(),
+          merchant: values.merchant.trim() || values.title.trim(),
+          note: [values.title.trim(), values.notes.trim()].filter(Boolean).join(" — "),
+          tags: values.tags.map((tag) => tag.label),
+        });
         onSuccess?.(values);
+      } catch (error: unknown) {
+        setSubmitError(error instanceof Error ? error.message : "Unable to save this transaction.");
       } finally {
         setIsSubmitting(false);
       }
@@ -212,6 +242,7 @@ export function useAddTransactionForm(
     setIsDetailsExpanded,
     isLedgerValid,
     isSubmitting,
+    submitError,
     updateField,
     setTransactionType,
     addQuickAmount,

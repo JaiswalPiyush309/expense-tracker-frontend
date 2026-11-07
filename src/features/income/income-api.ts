@@ -18,6 +18,10 @@ interface TransactionPage {
 
 let cachedRequest: { expiresAt: number; promise: Promise<IncomeTransaction[]> } | null = null;
 
+export function invalidateIncomeTransactions() {
+  cachedRequest = null;
+}
+
 export function getIncomeTransactions(): Promise<IncomeTransaction[]> {
   if (cachedRequest && cachedRequest.expiresAt > Date.now()) return cachedRequest.promise;
   const promise = loadIncomeTransactions();
