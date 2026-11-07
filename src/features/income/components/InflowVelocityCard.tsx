@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import type { IncomeVelocityGranularity } from "../types";
 import { useIncomeAnalytics } from "../hooks/useIncomeAnalytics";
@@ -15,9 +15,14 @@ function dayKey(date: Date) {
 
 export function InflowVelocityCard() {
   const [granularity, setGranularity] = useState<IncomeVelocityGranularity>("Monthly");
+  const [referenceNow, setReferenceNow] = useState<Date | null>(null);
   const { transactions, isLoading, error } = useIncomeAnalytics();
+  useEffect(() => {
+    setReferenceNow(new Date());
+  }, []);
   const points = useMemo(() => {
-    const now = new Date();
+    if (!referenceNow) return [];
+    const now = referenceNow;
     const count = granularity === "Monthly" ? 6 : granularity === "Weekly" ? 6 : 7;
     const periods = Array.from({ length: count }, (_, index) => {
       const date = new Date(now);
@@ -44,7 +49,7 @@ export function InflowVelocityCard() {
       if (period) period.amount += Number(transaction.amount);
     });
     return periods;
-  }, [granularity, transactions]);
+  }, [granularity, referenceNow, transactions]);
 
   const maxAmount = Math.max(...points.map((point) => point.amount), 1);
   const plotted = points.map((point, index) => ({
@@ -65,7 +70,7 @@ export function InflowVelocityCard() {
         </div>
       </div>
 
-      {isLoading ? <div className="flex h-56 items-center justify-center gap-2 text-sm text-muted"><LoaderCircle className="h-4 w-4 animate-spin" />Loading income history…</div> : error ? <div role="alert" className="flex h-56 items-center justify-center text-sm text-bad">{error}</div> : transactions.length === 0 ? <div className="flex h-56 items-center justify-center text-sm text-muted">Add income transactions to see your trend.</div> : (
+      {isLoading || !referenceNow ? <div className="flex h-56 items-center justify-center gap-2 text-sm text-muted"><LoaderCircle className="h-4 w-4 animate-spin" />Loading income history…</div> : error ? <div role="alert" className="flex h-56 items-center justify-center text-sm text-bad">{error}</div> : transactions.length === 0 ? <div className="flex h-56 items-center justify-center text-sm text-muted">Add income transactions to see your trend.</div> : (
         <div className="my-4">
           <div className="relative h-36 w-full">
             <svg viewBox="0 0 500 120" className="h-full w-full overflow-visible" preserveAspectRatio="none" role="img" aria-label={`${granularity} income trend`}>
