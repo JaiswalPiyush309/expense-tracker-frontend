@@ -1,9 +1,22 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  LoaderCircle,
+  RotateCcw,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { INCOME_DATE_PRESETS } from "../data/mock";
-import { cn } from "@/lib/cn";
-import { CalendarDays, Search } from "lucide-react";
+import {
+  getCategoryOptions,
+  type CategoryOption,
+} from "@/features/categories/categories-api";
+import {
+  getAccountDropdownOptions,
+  type AccountDropdownOption,
+} from "@/features/profile/accounts-api";
 
 interface IncomeFilterToolbarProps {
   datePreset: string;
@@ -21,9 +34,9 @@ interface IncomeFilterToolbarProps {
   onReset: () => void;
 }
 
+const PAYMENT_MODES = ["NEFT", "UPI", "ECS", "SWIFT"];
+
 export function IncomeFilterToolbar({
-  datePreset,
-  onDatePresetChange,
   searchQuery,
   onSearchChange,
   categoryFilter,
@@ -36,120 +49,196 @@ export function IncomeFilterToolbar({
   onStatusToggle,
   onReset,
 }: IncomeFilterToolbarProps) {
-  return (
-    <div className="space-y-3">
-      {/* Row 1: Date Range Presets */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        {INCOME_DATE_PRESETS.map((preset) => {
-          const active = datePreset === preset.id;
-          return (
-            <Button
-              key={preset.id}
-              type="button"
-              variant={active ? "accent" : "secondary"}
-              size="sm"
-              onClick={() => onDatePresetChange(preset.id)}
-              className={cn(
-                "h-auto min-h-0 rounded-full px-3 py-1.5 text-xs font-medium shadow-none",
-                active
-                  ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                  : "border-slate-200/80 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300",
-              )}
-            >
-              {" "}
-              {active && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-              <span>{preset.label}</span>
-            </Button>
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [accounts, setAccounts] = useState<AccountDropdownOption[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingAccounts, setLoadingAccounts] = useState(true);
+  const [categoryError, setCategoryError] = useState("");
+  const [accountError, setAccountError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    getCategoryOptions("INCOME")
+      .then((items) => {
+        if (active) setCategories(items);
+      })
+      .catch((error: unknown) => {
+        if (active)
+          setCategoryError(
+            error instanceof Error
+              ? error.message
+              : "Unable to load categories.",
           );
-        })}
+      })
+      .finally(() => {
+        if (active) setLoadingCategories(false);
+      });
+    getAccountDropdownOptions()
+      .then((items) => {
+        if (active) setAccounts(items);
+      })
+      .catch((error: unknown) => {
+        if (active)
+          setAccountError(
+            error instanceof Error ? error.message : "Unable to load accounts.",
+          );
+      })
+      .finally(() => {
+        if (active) setLoadingAccounts(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={() => onDatePresetChange("custom")}
-          className="h-auto min-h-0 rounded-full px-3 py-1.5 text-xs font-medium"
-        >
-          <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
-          <span>Custom Range</span>
-        </Button>
-      </div>
+  const statusIsReceived = statusFilter.toLowerCase() === "received";
 
-      {/* Row 2: Search & Dropdown Filters */}
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200/90 bg-white p-2.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex min-w-55 flex-1 items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 dark:border-slate-800 dark:bg-slate-950/60">
-          <Search />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search income by source, payer, or ref..."
-            className="w-full bg-transparent text-xs text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-200"
-          />
-        </div>
+  return (
+    <div className="flex w-full flex-wrap items-center gap-2 rounded-xl border border-line bg-white p-3 shadow-sm dark:bg-slate-950 sm:flex-nowrap sm:p-4">
+      <label className="relative min-w-48 flex-1 basis-full sm:basis-64">
+        <span className="sr-only">
+          Search income by source, payer, or reference
+        </span>
+        <Search
+          aria-hidden="true"
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+        />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(event) => onSearchChange(event.target.value)}
+          placeholder="Search income by source, payer, or ref..."
+          className="h-11 w-full rounded-lg border border-transparent bg-surface-muted/70 pl-10 pr-3 text-sm text-ink outline-none transition placeholder:text-muted focus:border-focus focus:bg-surface focus:ring-2 focus:ring-focus/20"
+        />
+      </label>
 
-        {/* Category Filter */}
-        <select
-          value={categoryFilter}
-          onChange={(e) => onCategoryChange(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-        >
-          <option value="All">Category: All</option>
-          <option value="Salary & Compensation">Salary & Compensation</option>
-          <option value="Consulting & Advisory">Consulting & Advisory</option>
-          <option value="Equity Dividends">Equity Dividends</option>
-          <option value="Freelance & Contract">Freelance & Contract</option>
-          <option value="Cashback & Rewards">Cashback & Rewards</option>
-        </select>
+      <FilterSelect
+        label="Category"
+        value={categoryFilter}
+        onChange={onCategoryChange}
+        loading={loadingCategories}
+        error={categoryError}
+        emptyLabel="No income categories"
+        options={categories.map((item) => ({
+          value: item.id,
+          label: item.name,
+        }))}
+      />
+      <FilterSelect
+        label="Mode"
+        value={modeFilter}
+        onChange={onModeChange}
+        options={PAYMENT_MODES.map((item) => ({ value: item, label: item }))}
+      />
+      <FilterSelect
+        label="Account"
+        value={accountFilter}
+        onChange={onAccountChange}
+        loading={loadingAccounts}
+        error={accountError}
+        emptyLabel="No accounts"
+        options={accounts.map((item) => ({
+          value: item.id,
+          label:
+            item.displayLabel ||
+            `${item.name}${item.accountNumberLast4 ? ` · •••• ${item.accountNumberLast4}` : ""}`,
+        }))}
+      />
 
-        {/* Mode Filter */}
-        <select
-          value={modeFilter}
-          onChange={(e) => onModeChange(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-        >
-          <option value="All">Mode: All</option>
-          <option value="NEFT">Mode: NEFT</option>
-          <option value="UPI">Mode: UPI</option>
-          <option value="ECS">Mode: ECS</option>
-          <option value="SWIFT">Mode: SWIFT</option>
-        </select>
+      <Button
+        type="button"
+        variant={statusIsReceived ? "soft" : "secondary"}
+        size="sm"
+        onClick={onStatusToggle}
+        aria-label={`Status filter: ${statusFilter}. Activate to change status filter.`}
+        className={
+          statusIsReceived
+            ? "h-11 min-h-11 shrink-0 rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+            : "h-11 min-h-11 shrink-0 rounded-lg px-3 text-sm"
+        }
+      >
+        <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+        <span className="whitespace-nowrap">
+          Status: {statusFilter || "All"}
+          {statusIsReceived ? " (Active)" : ""}
+        </span>
+      </Button>
 
-        {/* Account Filter */}
-        <select
-          value={accountFilter}
-          onChange={(e) => onAccountChange(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-        >
-          <option value="All">Account: All</option>
-          <option value="HDFC">HDFC ••4821</option>
-          <option value="ICICI">ICICI ••8829</option>
-        </select>
-
-        {/* Status Pill */}
-        <Button
-          type="button"
-          variant="soft"
-          size="sm"
-          onClick={onStatusToggle}
-          className="h-auto min-h-0 rounded-lg border border-emerald-200 bg-emerald-50/90 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:brightness-95 dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-300"
-        >
-          <span className="h-2 w-2 rounded-full bg-emerald-500" />
-          <span>Status: {statusFilter} (Active)</span>
-        </Button>
-
-        {/* Reset */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={onReset}
-          className="h-auto min-h-0 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-        >
-          <span>↻</span>
-          <span>Reset</span>
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={onReset}
+        className="h-11 min-h-11 shrink-0 rounded-lg px-3 text-sm text-muted"
+      >
+        <RotateCcw aria-hidden="true" className="h-4 w-4" />
+        <span>Reset</span>
+      </Button>
     </div>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  options,
+  loading = false,
+  error = "",
+  emptyLabel = "No options",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: { value: string; label: string }[];
+  loading?: boolean;
+  error?: string;
+  emptyLabel?: string;
+}) {
+  return (
+    <label className="relative min-w-32 flex-1 sm:flex-none">
+      <span className="sr-only">Filter by {label.toLowerCase()}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={loading || (options.length === 0 && Boolean(error))}
+        title={error || undefined}
+        className="h-11 w-full appearance-none rounded-lg border border-line bg-surface-muted/70 py-2 pl-3 pr-9 text-sm text-ink outline-none transition hover:bg-surface focus:border-focus focus:ring-2 focus:ring-focus/20 disabled:cursor-wait disabled:opacity-70 sm:min-w-32"
+      >
+        <option value="All">{label}: All</option>
+        {loading && (
+          <option disabled value="__loading">
+            Loading…
+          </option>
+        )}
+        {!loading && options.length === 0 && error && (
+          <option disabled value="__error">
+            Unable to load
+          </option>
+        )}
+        {!loading && options.length === 0 && !error && label !== "Mode" && (
+          <option disabled value="__empty">
+            {emptyLabel}
+          </option>
+        )}
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {loading ? (
+        <LoaderCircle
+          aria-hidden="true"
+          className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-muted"
+        />
+      ) : (
+        <ChevronDown
+          aria-hidden="true"
+          className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted"
+        />
+      )}
+      {error && <span className="sr-only">{error}</span>}
+    </label>
   );
 }
