@@ -15,9 +15,10 @@ import { getCategoryOptions, type CategoryOption, type CategoryType } from "@/fe
 
 export function useAddTransactionForm(
   onSuccess?: (values: AddTransactionFormValues) => void,
+  initialType: TransactionType = "expense",
 ) {
   const [values, setValues] = useState<AddTransactionFormValues>(
-    createInitialTransactionForm(),
+    () => createInitialTransactionForm(initialType),
   );
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,8 +166,8 @@ export function useAddTransactionForm(
   }, []);
 
   const resetForm = useCallback(() => {
-    setValues(createInitialTransactionForm());
-  }, []);
+    setValues(createInitialTransactionForm(initialType));
+  }, [initialType]);
 
   const handleSubmit = useCallback(
     async (e?: React.FormEvent) => {

@@ -8,17 +8,20 @@ import { TransactionTypeSelector } from "./components/TransactionTypeSelector";
 import { TransactionAmountInput } from "./components/TransactionAmountInput";
 import { TransactionFormFields } from "./components/TransactionFormFields";
 import { TransactionFormFooter } from "./components/TransactionFormFooter";
+import type { TransactionType } from "./model/types";
 
 interface AddTransactionDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onRecordTransaction?: (transaction: AddTransactionFormValues) => void;
+  initialType?: TransactionType;
 }
 
 export default function AddTransactionDialog({
   isOpen,
   onClose,
   onRecordTransaction,
+  initialType = "expense",
 }: AddTransactionDialogProps) {
   const {
     values,
@@ -45,7 +48,7 @@ export default function AddTransactionDialog({
   } = useAddTransactionForm((recorded) => {
     onRecordTransaction?.(recorded);
     onClose();
-  });
+  }, initialType);
 
   useEffect(() => {
     if (!isOpen) {
