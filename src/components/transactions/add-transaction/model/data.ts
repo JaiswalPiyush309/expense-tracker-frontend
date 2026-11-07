@@ -17,16 +17,12 @@ export const TRANSACTION_TYPES: {
 export const QUICK_ADD_AMOUNTS = [100, 500, 1000, 2000, 5000];
 
 export function createInitialTransactionForm(type: TransactionType = "expense"): AddTransactionFormValues {
-  const now = new Date();
-  const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-  const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-
   return {
     type,
     amount: 0,
     title: "",
-    date,
-    time,
+    date: "",
+    time: "",
     accountId: "",
     categoryId: "",
     merchant: "",

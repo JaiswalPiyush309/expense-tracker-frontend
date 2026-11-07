@@ -30,6 +30,17 @@ export function useAddTransactionForm(
   const [categoriesError, setCategoriesError] = useState("");
 
   useEffect(() => {
+    const now = new Date();
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    setValues((current) => ({
+      ...current,
+      date: current.date || date,
+      time: current.time || time,
+    }));
+  }, []);
+
+  useEffect(() => {
     let active = true;
     getAccountDropdownOptions()
       .then((result) => {
@@ -166,7 +177,10 @@ export function useAddTransactionForm(
   }, []);
 
   const resetForm = useCallback(() => {
-    setValues(createInitialTransactionForm(initialType));
+    const now = new Date();
+    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    const time = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    setValues({ ...createInitialTransactionForm(initialType), date, time });
   }, [initialType]);
 
   const handleSubmit = useCallback(
