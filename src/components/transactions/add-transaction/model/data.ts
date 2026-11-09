@@ -24,6 +24,7 @@ export function createInitialTransactionForm(type: TransactionType = "expense"):
     date: "",
     time: "",
     accountId: "",
+    toAccountId: "",
     categoryId: "",
     merchant: "",
     isAutoTagged: false,

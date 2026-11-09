@@ -62,6 +62,10 @@ export function useAddTransactionForm(
           accountId: options.some((account) => account.id === current.accountId)
             ? current.accountId
             : defaultId,
+          toAccountId: current.type === "transfer" &&
+            (!current.toAccountId || current.toAccountId === defaultId)
+            ? options.find((account) => account.id !== defaultId)?.id ?? ""
+            : current.toAccountId,
         }));
       })
       .catch((error: unknown) => {
@@ -113,10 +117,11 @@ export function useAddTransactionForm(
       Boolean(values.accountId) &&
       Boolean(values.date) &&
       Boolean(values.time) &&
-      categories.length > 0 &&
-      Boolean(values.categoryId)
+      (values.type === "transfer"
+        ? Boolean(values.toAccountId) && values.toAccountId !== values.accountId
+        : categories.length > 0 && Boolean(values.categoryId))
     );
-  }, [accounts.length, categories.length, values.amount, values.title, values.accountId, values.categoryId, values.date, values.time]);
+  }, [accounts.length, categories.length, values.amount, values.title, values.accountId, values.toAccountId, values.categoryId, values.type, values.date, values.time]);
 
   const updateField = useCallback(
     <K extends keyof AddTransactionFormValues>(
@@ -133,16 +138,29 @@ export function useAddTransactionForm(
           }
         }
         if (field === "merchant") next.isAutoTagged = false;
+        if (field === "accountId" && typeof value === "string" && value === prev.toAccountId) {
+          next.toAccountId = accounts.find((account) => account.id !== value)?.id ?? "";
+        }
         return next;
       });
       setSubmitError("");
     },
-    [],
+    [accounts],
   );
 
   const setTransactionType = useCallback((type: TransactionType) => {
-    setValues((prev) => ({ ...prev, type }));
-  }, []);
+    setValues((prev) => ({
+      ...prev,
+      type,
+      toAccountId: type === "transfer"
+        ? (prev.toAccountId && prev.toAccountId !== prev.accountId
+          ? prev.toAccountId
+          : accounts.find((account) => account.id !== prev.accountId)?.id ?? "")
+        : "",
+      categoryId: type === "transfer" ? "" : prev.categoryId,
+    }));
+    setSubmitError("");
+  }, [accounts]);
 
   const addQuickAmount = useCallback((delta: number) => {
     setValues((prev) => ({
@@ -200,6 +218,7 @@ export function useAddTransactionForm(
         const typeMap: Partial<Record<TransactionType, ApiTransactionType>> = {
           income: "INCOME",
           expense: "EXPENSE",
+          transfer: "TRANSFER",
         };
         const apiType = typeMap[values.type];
         if (!apiType) {
@@ -211,7 +230,9 @@ export function useAddTransactionForm(
         }
         await createTransaction({
           accountId: values.accountId,
-          categoryId: values.categoryId,
+          ...(apiType === "TRANSFER"
+            ? { toAccountId: values.toAccountId }
+            : { categoryId: values.categoryId }),
           type: apiType,
           amount: values.amount,
           transactionDate: transactionDate.toISOString(),

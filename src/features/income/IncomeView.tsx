@@ -14,7 +14,8 @@ import { useIncomeAnalytics } from "./hooks/useIncomeAnalytics";
 
 export function IncomeView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [datePreset, setDatePreset] = useState("this-month");
+  const [startDateTime, setStartDateTime] = useState("");
+  const [endDateTime, setEndDateTime] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [modeFilter, setModeFilter] = useState("All");
@@ -34,6 +35,9 @@ export function IncomeView() {
       if (categoryFilter !== "All" && item.category?.id !== categoryFilter) return false;
       if (accountFilter !== "All" && item.account?.id !== accountFilter) return false;
       if (activeTab === "uncategorized" && item.category) return false;
+      const transactionTime = Date.parse(item.transactionDate);
+      if (startDateTime && transactionTime < Date.parse(startDateTime)) return false;
+      if (endDateTime && transactionTime > Date.parse(endDateTime)) return false;
       // The current transaction API has no persisted payment-mode or pending status fields.
       if (statusFilter === "Pending") return false;
       return true;
@@ -41,13 +45,13 @@ export function IncomeView() {
     .sort((a, b) => sortBy === "Amount (High to Low)"
       ? Number(b.amount) - Number(a.amount)
       : new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime()),
-  [transactions, searchQuery, categoryFilter, accountFilter, activeTab, sortBy, statusFilter]);
+  [transactions, searchQuery, categoryFilter, accountFilter, activeTab, sortBy, statusFilter, startDateTime, endDateTime]);
 
   const pageCount = Math.max(1, Math.ceil(filteredTransactions.length / pageSize));
   const pageItems = useMemo(() => filteredTransactions.slice((currentPage - 1) * pageSize, currentPage * pageSize), [filteredTransactions, currentPage, pageSize]);
   const uncategorizedCount = transactions.filter((item) => !item.category).length;
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, categoryFilter, modeFilter, accountFilter, statusFilter, activeTab, sortBy, pageSize]);
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, categoryFilter, modeFilter, accountFilter, statusFilter, activeTab, sortBy, pageSize, startDateTime, endDateTime]);
   useEffect(() => { setCurrentPage((page) => Math.min(page, pageCount)); }, [pageCount]);
 
   const toggleSelectAll = () => {
@@ -57,7 +61,8 @@ export function IncomeView() {
   };
   const toggleSelectRow = (id: string) => setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
   const resetFilters = () => {
-    setDatePreset("this-month");
+    setStartDateTime("");
+    setEndDateTime("");
     setSearchQuery("");
     setCategoryFilter("All");
     setModeFilter("All");
@@ -92,8 +97,10 @@ export function IncomeView() {
     <main className="mx-auto w-full max-w-350 space-y-6 p-4 pb-10 sm:p-6">
       <IncomeHeader onOpenAddIncome={() => setIsAddModalOpen(true)} onExportCsv={exportCsv} />
       <IncomeFilterToolbar
-        datePreset={datePreset}
-        onDatePresetChange={setDatePreset}
+        startDateTime={startDateTime}
+        onStartDateTimeChange={setStartDateTime}
+        endDateTime={endDateTime}
+        onEndDateTimeChange={setEndDateTime}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
         categoryFilter={categoryFilter}

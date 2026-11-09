@@ -96,15 +96,27 @@ export function TransactionFormFields({
         />
       </div>
 
-      {/* Row 2: Category + Merchant / Recipient */}
+      {/* Row 2: Destination account for transfers, otherwise category */}
       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-        <TransactionCategorySelector
-          categoryId={values.categoryId}
-          categories={categories}
-          loading={categoriesLoading}
-          error={categoriesError}
-          onChange={(id) => updateField("categoryId", id)}
-        />
+        {values.type === "transfer" ? (
+          <AccountSelector
+            accountId={values.toAccountId}
+            label="Transfer To"
+            excludeAccountId={values.accountId}
+            accounts={accounts}
+            loading={accountsLoading}
+            error={accountsError}
+            onChange={(id) => updateField("toAccountId", id)}
+          />
+        ) : (
+          <TransactionCategorySelector
+            categoryId={values.categoryId}
+            categories={categories}
+            loading={categoriesLoading}
+            error={categoriesError}
+            onChange={(id) => updateField("categoryId", id)}
+          />
+        )}
         <PaymentMethodSelector
           merchant={values.merchant}
           isAutoTagged={values.isAutoTagged}

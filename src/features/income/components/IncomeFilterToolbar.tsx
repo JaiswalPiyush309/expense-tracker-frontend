@@ -19,8 +19,10 @@ import {
 } from "@/features/profile/accounts-api";
 
 interface IncomeFilterToolbarProps {
-  datePreset: string;
-  onDatePresetChange: (preset: string) => void;
+  startDateTime: string;
+  onStartDateTimeChange: (value: string) => void;
+  endDateTime: string;
+  onEndDateTimeChange: (value: string) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   categoryFilter: string;
@@ -37,6 +39,10 @@ interface IncomeFilterToolbarProps {
 const PAYMENT_MODES = ["NEFT", "UPI", "ECS", "SWIFT"];
 
 export function IncomeFilterToolbar({
+  startDateTime,
+  onStartDateTimeChange,
+  endDateTime,
+  onEndDateTimeChange,
   searchQuery,
   onSearchChange,
   categoryFilter,
@@ -94,7 +100,7 @@ export function IncomeFilterToolbar({
   const statusIsReceived = statusFilter.toLowerCase() === "received";
 
   return (
-    <div className="flex w-full flex-wrap items-center gap-2 rounded-xl border border-line bg-white p-3 shadow-sm dark:bg-slate-950 sm:flex-nowrap sm:p-4">
+    <div className="flex w-full flex-wrap items-center gap-2 rounded-xl border border-line bg-white p-3 shadow-sm dark:bg-slate-950 sm:p-4">
       <label className="relative min-w-48 flex-1 basis-full sm:basis-64">
         <span className="sr-only">
           Search income by source, payer, or reference
@@ -110,6 +116,15 @@ export function IncomeFilterToolbar({
           placeholder="Search income by source, payer, or ref..."
           className="h-11 w-full rounded-lg border border-transparent bg-surface-muted/70 pl-10 pr-3 text-sm text-ink outline-none transition placeholder:text-muted focus:border-focus focus:bg-surface focus:ring-2 focus:ring-focus/20"
         />
+      </label>
+
+      <label className="flex h-11 min-w-52 flex-1 items-center gap-2 rounded-lg border border-line bg-surface-muted/70 px-3 text-xs text-muted">
+        <span className="shrink-0 font-medium">From</span>
+        <input type="datetime-local" aria-label="Income start date and time" value={startDateTime} onChange={(event) => onStartDateTimeChange(event.target.value)} className="min-w-0 flex-1 bg-transparent text-xs text-ink outline-none" />
+      </label>
+      <label className="flex h-11 min-w-52 flex-1 items-center gap-2 rounded-lg border border-line bg-surface-muted/70 px-3 text-xs text-muted">
+        <span className="shrink-0 font-medium">To</span>
+        <input type="datetime-local" aria-label="Income end date and time" value={endDateTime} onChange={(event) => onEndDateTimeChange(event.target.value)} className="min-w-0 flex-1 bg-transparent text-xs text-ink outline-none" />
       </label>
 
       <FilterSelect

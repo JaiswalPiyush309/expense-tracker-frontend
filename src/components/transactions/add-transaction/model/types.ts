@@ -43,6 +43,7 @@ export interface AddTransactionFormValues {
   date: string;
   time: string;
   accountId: string;
+  toAccountId: string;
   categoryId: string;
   merchant: string;
   isAutoTagged: boolean;
