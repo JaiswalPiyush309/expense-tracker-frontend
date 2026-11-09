@@ -2,6 +2,7 @@
 
 import { Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ImportStatementButton } from "@/features/statement-imports";
 
 interface IncomeHeaderProps {
   onOpenAddIncome: () => void;
@@ -26,7 +27,8 @@ export function IncomeHeader({
           from.
         </p>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+        <ImportStatementButton />
         {onExportCsv && (
           <Button
             type="button"

@@ -1,16 +1,11 @@
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ImportStatementButton } from "@/features/statement-imports";
 import { cn } from "@/lib/cn";
 import { formatINR } from "@/lib/format";
 import { toneSoft } from "@/lib/tone";
 import type { Tone } from "@/lib/tone";
-import {
-  ArrowDownToLine,
-  ArrowUpRight,
-  CircleMinus,
-  CirclePlus,
-  Handshake,
-} from "lucide-react";
+import { CircleMinus, CirclePlus, Handshake } from "lucide-react";
 
 interface WelcomeCardProps {
   name: string;
@@ -20,7 +15,6 @@ interface WelcomeCardProps {
   onAddExpense?: () => void;
   onAddIncome?: () => void;
   onRecordLending?: () => void;
-  onImportStatement?: () => void;
 }
 
 export function WelcomeCard({
@@ -31,7 +25,6 @@ export function WelcomeCard({
   onAddExpense,
   onAddIncome,
   onRecordLending,
-  onImportStatement,
 }: WelcomeCardProps) {
   const changeTone: Tone =
     netWorthChange.trim().startsWith("-")
@@ -112,17 +105,7 @@ export function WelcomeCard({
           <Handshake aria-hidden="true" className="h-[18px] w-[18px] text-accent" />
           Record Lending
         </Button>
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={onImportStatement}
-          disabled={!onImportStatement}
-          className="h-12 justify-start px-4 sm:px-5"
-        >
-          <ArrowDownToLine aria-hidden="true" className="h-[18px] w-[18px] text-accent" />
-          Import Statement
-          <ArrowUpRight aria-hidden="true" className="ml-auto h-4 w-4 text-muted" />
-        </Button>
+        <ImportStatementButton layout="welcome" />
       </div>
     </Card>
   );
