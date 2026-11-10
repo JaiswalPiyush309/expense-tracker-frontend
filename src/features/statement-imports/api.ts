@@ -98,6 +98,9 @@ export function normalizeBatchResponse(raw: any): StagedBatchResponse {
 
   return {
     id: String(raw?.id || raw?.batchId || ""),
+    sourceType: raw?.sourceType === "UPI" ? "UPI" : "BANK",
+    upiApp: raw?.upiApp ?? null,
+    bankCode: raw?.bankCode ?? null,
     sourceEntity:
       raw?.sourceEntity ||
       raw?.providerName ||
@@ -122,9 +125,9 @@ export async function uploadStatementFile(
 ): Promise<StagedBatchResponse> {
   const formData = new FormData();
   formData.append("file", file);
-  if (dto.accountId) formData.append("accountId", dto.accountId);
-  if (dto.sourceType) formData.append("sourceType", dto.sourceType);
-  if (dto.providerName) formData.append("providerName", dto.providerName);
+  formData.append("sourceType", dto.sourceType);
+  if (dto.upiApp) formData.append("upiApp", dto.upiApp);
+  if (dto.bankCode) formData.append("bankCode", dto.bankCode);
 
   const response = await fetch(`${getApiBaseUrl()}/transactions/import/upload`, {
     method: "POST",

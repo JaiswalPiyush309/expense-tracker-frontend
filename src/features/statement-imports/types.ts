@@ -8,10 +8,14 @@ export type StagedTransactionType = "CREDIT" | "DEBIT";
 
 export type ImportFilterTab = "all" | "valid" | "duplicates" | "needs-review";
 
+export type ImportSourceType = "BANK" | "UPI";
+
+export type UpiApp = "PHONEPE" | "GPAY" | "PAYTM" | "BHIM" | "CRED";
+
 export interface UploadStatementDTO {
-  sourceType?: "BANK_STATEMENT" | "UPI_HISTORY";
-  providerName?: string;
-  accountId: string;
+  sourceType: ImportSourceType;
+  upiApp?: UpiApp;
+  bankCode?: string;
 }
 
 export interface UpdateStagedTransactionDto {
@@ -46,6 +50,9 @@ export interface StagedTransactionRow {
 
 export interface StagedBatchResponse {
   id: string;
+  sourceType?: ImportSourceType;
+  upiApp?: UpiApp | null;
+  bankCode?: string | null;
   sourceEntity: string; // e.g., "HDFC Bank Ltd. (Salary Account)"
   destinationAccountId: string;
   destinationAccountName: string; // e.g., "HDFC Sal ••4821"

@@ -150,11 +150,12 @@ export function StatementImportView({
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) {
-            handleFileUpload(file, {
-              accountId: batch?.destinationAccountId || "hdfc-4821",
-              providerName: batch?.sourceEntity,
-              sourceType: "BANK_STATEMENT",
-            });
+            handleFileUpload(
+              file,
+              batch?.sourceType === "UPI"
+                ? { sourceType: "UPI", upiApp: batch.upiApp ?? "PHONEPE" }
+                : { sourceType: "BANK", bankCode: batch?.bankCode ?? "HDFC" },
+            );
           }
         }}
         className="hidden"

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { UploadStatementDTO } from "../types";
+import type { ImportSourceType, UploadStatementDTO, UpiApp } from "../types";
 
 interface ImportUploadDropzoneProps {
   isUploading: boolean;
@@ -12,24 +12,24 @@ const CONFIGURED_BANK_ACCOUNTS = [
   {
     id: "hdfc-4821",
     label: "HDFC Sal ••4821 (Bal: ₹3,42,150.00)",
-    providerName: "HDFC Bank Ltd. (Salary Account)",
+    bankCode: "HDFC",
   },
   {
     id: "icici-8829",
     label: "ICICI Sav ••8829 (Bal: ₹5,18,400.00)",
-    providerName: "ICICI Bank Ltd. (Wealth Account)",
+    bankCode: "ICICI",
   },
   {
     id: "sbi-1108",
     label: "SBI Sav ••1108 (Bal: ₹94,320.00)",
-    providerName: "State Bank of India (Savings Account)",
+    bankCode: "SBI",
   },
 ];
 
-const UPI_APPS = [
-  { id: "PhonePe", label: "PhonePe", badge: "Popular" },
-  { id: "Google Pay", label: "Google Pay (GPay)" },
-  { id: "Paytm", label: "Paytm UPI" },
+const UPI_APPS: Array<{ id: UpiApp; label: string; badge?: string }> = [
+  { id: "PHONEPE", label: "PhonePe", badge: "Popular" },
+  { id: "GPAY", label: "Google Pay (GPay)" },
+  { id: "PAYTM", label: "Paytm UPI" },
   { id: "BHIM", label: "BHIM UPI" },
   { id: "CRED", label: "CRED Pay / UPI" },
 ];
@@ -40,10 +40,8 @@ export function ImportUploadDropzone({
 }: ImportUploadDropzoneProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // 1. Source Type: "BANK_STATEMENT" | "UPI_HISTORY"
-  const [sourceType, setSourceType] = useState<
-    "BANK_STATEMENT" | "UPI_HISTORY"
-  >("BANK_STATEMENT");
+  // Backend enum: "BANK" | "UPI"
+  const [sourceType, setSourceType] = useState<ImportSourceType>("BANK");
 
   // 2. Configured Bank Account state
   const [accountId, setAccountId] = useState<string>(
@@ -51,7 +49,7 @@ export function ImportUploadDropzone({
   );
 
   // 3. Selected UPI App state
-  const [selectedUpiApp, setSelectedUpiApp] = useState<string>(UPI_APPS[0].id);
+  const [selectedUpiApp, setSelectedUpiApp] = useState<UpiApp>(UPI_APPS[0].id);
 
   const selectedBank =
     CONFIGURED_BANK_ACCOUNTS.find((acc) => acc.id === accountId) ??
@@ -61,16 +59,12 @@ export function ImportUploadDropzone({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const resolvedProviderName =
-      sourceType === "BANK_STATEMENT"
-        ? selectedBank.providerName
-        : `${selectedUpiApp} (${selectedBank.label.split(" (")[0]})`;
+    const payload: UploadStatementDTO =
+      sourceType === "BANK"
+        ? { sourceType: "BANK", bankCode: selectedBank.bankCode }
+        : { sourceType: "UPI", upiApp: selectedUpiApp };
 
-    onUpload(file, {
-      accountId,
-      providerName: resolvedProviderName,
-      sourceType,
-    });
+    onUpload(file, payload);
 
     // Reset file input so selecting the same file again triggers onChange
     e.target.value = "";
@@ -87,9 +81,9 @@ export function ImportUploadDropzone({
           <div className="grid grid-cols-2 gap-2.5 rounded-xl bg-slate-100/90 p-1.5 dark:bg-slate-900">
             <button
               type="button"
-              onClick={() => setSourceType("BANK_STATEMENT")}
+              onClick={() => setSourceType("BANK")}
               className={`flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-semibold transition-all ${
-                sourceType === "BANK_STATEMENT"
+                sourceType === "BANK"
                   ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-800 dark:text-indigo-400"
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
@@ -108,9 +102,9 @@ export function ImportUploadDropzone({
 
             <button
               type="button"
-              onClick={() => setSourceType("UPI_HISTORY")}
+              onClick={() => setSourceType("UPI")}
               className={`flex items-center justify-center gap-2 rounded-lg py-2.5 px-3 text-xs font-semibold transition-all ${
-                sourceType === "UPI_HISTORY"
+                sourceType === "UPI"
                   ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-800 dark:text-indigo-400"
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
@@ -131,7 +125,7 @@ export function ImportUploadDropzone({
         </div>
 
         {/* Step 2A: If Bank is selected -> Show Configured Bank Accounts */}
-        {sourceType === "BANK_STATEMENT" ? (
+        {sourceType === "BANK" ? (
           <div>
             <div className="mb-1.5 flex items-center justify-between">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
@@ -228,7 +222,7 @@ export function ImportUploadDropzone({
         <span>
           {isUploading
             ? "Uploading & Parsing Statement..."
-            : sourceType === "BANK_STATEMENT"
+            : sourceType === "BANK"
               ? `Upload ${selectedBank.label.split(" ••")[0]} Statement (CSV / XLSX)`
               : `Upload ${selectedUpiApp} Statement (CSV / XLSX)`}
         </span>
@@ -237,7 +231,12 @@ export function ImportUploadDropzone({
       <p className="mt-2 text-[11px] text-slate-400">
         Calls{" "}
         <code className="font-mono">POST /transactions/import/upload</code> with{" "}
-        <code className="font-mono">sourceType=&quot;{sourceType}&quot;</code>
+        <code className="font-mono">
+          sourceType=&quot;{sourceType}&quot;
+          {sourceType === "BANK"
+            ? `, bankCode="${selectedBank.bankCode}"`
+            : `, upiApp="${selectedUpiApp}"`}
+        </code>
       </p>
 
       <input
