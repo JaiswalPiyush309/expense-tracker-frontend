@@ -5,10 +5,7 @@ import {
   UpdateStagedTransactionDto,
   UploadStatementDTO,
 } from "./types";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
-  "http://localhost:3001";
+import { getApiBaseUrl } from "@/lib/api-config";
 
 function getAuthHeaders(isMultipart = false): HeadersInit {
   const token =
@@ -131,7 +128,7 @@ export async function uploadStatementFile(
   if (dto.sourceType) formData.append("sourceType", dto.sourceType);
   if (dto.providerName) formData.append("providerName", dto.providerName);
 
-  const response = await fetch(`${API_BASE_URL}/transactions/import/upload`, {
+  const response = await fetch(`${getApiBaseUrl()}/transactions/import/upload`, {
     method: "POST",
     headers: getAuthHeaders(true),
     body: formData,
@@ -151,7 +148,7 @@ export async function fetchStagedBatch(
   batchId: string,
 ): Promise<StagedBatchResponse> {
   const response = await fetch(
-    `${API_BASE_URL}/transactions/import/batch/${batchId}`,
+    `${getApiBaseUrl()}/transactions/import/batch/${batchId}`,
     {
       method: "GET",
       headers: getAuthHeaders(),
@@ -173,7 +170,7 @@ export async function patchStagedRow(
   dto: UpdateStagedTransactionDto,
 ): Promise<StagedTransactionRow> {
   const response = await fetch(
-    `${API_BASE_URL}/transactions/import/row/${rowId}`,
+    `${getApiBaseUrl()}/transactions/import/row/${rowId}`,
     {
       method: "PATCH",
       headers: getAuthHeaders(),
@@ -193,7 +190,7 @@ export async function patchStagedRow(
 // 4. DELETE /transactions/import/row/:id
 export async function removeStagedRow(rowId: string): Promise<void> {
   const response = await fetch(
-    `${API_BASE_URL}/transactions/import/row/${rowId}`,
+    `${getApiBaseUrl()}/transactions/import/row/${rowId}`,
     {
       method: "DELETE",
       headers: getAuthHeaders(),
@@ -211,7 +208,7 @@ export async function commitStagedBatch(
   batchId: string,
 ): Promise<CommitBatchResponse> {
   const response = await fetch(
-    `${API_BASE_URL}/transactions/import/batch/${batchId}/commit`,
+    `${getApiBaseUrl()}/transactions/import/batch/${batchId}/commit`,
     {
       method: "POST",
       headers: getAuthHeaders(),
