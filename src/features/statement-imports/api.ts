@@ -6,19 +6,17 @@ import {
   UploadStatementDTO,
 } from "./types";
 import { getApiBaseUrl } from "@/lib/api-config";
+import { getAccessToken } from "@/lib/storage";
 
 function getAuthHeaders(isMultipart = false): HeadersInit {
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("accessToken") ||
-        localStorage.getItem("token") ||
-        localStorage.getItem("lf_token")
-      : null;
-
-  const headers: Record<string, string> = {};
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error("Your session has expired. Please sign in again.");
   }
+
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+  };
   if (!isMultipart) {
     headers["Content-Type"] = "application/json";
   }
