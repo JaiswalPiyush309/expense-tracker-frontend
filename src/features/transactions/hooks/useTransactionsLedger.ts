@@ -70,6 +70,7 @@ export function useTransactionsLedger() {
   const [transactions, setTransactions] = useState<LedgerTransactionItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [referenceNow, setReferenceNow] = useState<number | null>(null);
   const [datePreset, setDatePreset] = useState<string>("all");
   const [activeSubTab, setActiveSubTab] = useState<TransactionsSubTabId>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -99,6 +100,7 @@ export function useTransactionsLedger() {
   }, []);
 
   useEffect(() => {
+    setReferenceNow(Date.now());
     loadTransactions();
     const refresh = () => loadTransactions();
     window.addEventListener("transactions:created", refresh);
@@ -107,30 +109,32 @@ export function useTransactionsLedger() {
   }, [loadTransactions]);
 
   const filteredTransactions = useMemo(() => {
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const now = referenceNow === null ? null : new Date(referenceNow);
+    const startOfToday = now
+      ? new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      : null;
     let dateStart: Date | null = null;
     let dateEnd: Date | null = null;
 
-    if (datePreset === "today") {
+    if (now && startOfToday && datePreset === "today") {
       dateStart = startOfToday;
       dateEnd = new Date(startOfToday);
       dateEnd.setDate(dateEnd.getDate() + 1);
-    } else if (datePreset === "this-week") {
+    } else if (now && startOfToday && datePreset === "this-week") {
       dateStart = new Date(startOfToday);
       dateStart.setDate(dateStart.getDate() - ((dateStart.getDay() + 6) % 7));
       dateEnd = new Date(dateStart);
       dateEnd.setDate(dateEnd.getDate() + 7);
-    } else if (datePreset === "this-month") {
+    } else if (now && datePreset === "this-month") {
       dateStart = new Date(now.getFullYear(), now.getMonth(), 1);
       dateEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    } else if (datePreset === "last-month") {
+    } else if (now && datePreset === "last-month") {
       dateStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       dateEnd = new Date(now.getFullYear(), now.getMonth(), 1);
-    } else if (datePreset === "last-3-months") {
+    } else if (now && datePreset === "last-3-months") {
       dateStart = new Date(now.getFullYear(), now.getMonth() - 2, 1);
       dateEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    } else if (datePreset === "this-year") {
+    } else if (now && datePreset === "this-year") {
       dateStart = new Date(now.getFullYear(), 0, 1);
       dateEnd = new Date(now.getFullYear() + 1, 0, 1);
     }
@@ -192,6 +196,7 @@ export function useTransactionsLedger() {
       return true;
     });
   }, [transactions,
+    referenceNow,
     datePreset,
     activeSubTab,
     searchQuery,
