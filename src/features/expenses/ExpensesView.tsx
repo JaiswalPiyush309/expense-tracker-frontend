@@ -1,98 +1,134 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import { AddTransactionDialog } from "@/components/transactions/add-transaction";
-import { ExpenseCategoryCard } from "@/features/dashboard/components/ExpenseCategoryCard";
-import { getDashboardSummary } from "@/features/dashboard/api";
-import type { BudgetItem, CategoryShare, DashboardSummary } from "@/features/dashboard/types";
 import { ExpensesHeader } from "./components/ExpensesHeader";
+import { useExpensesLedger } from "./hooks/useExpensesLedger";
+import { ExpensesFilterToolbar } from "./components/ExpensesFilterToolbar";
+import { ExpensesKpiGrid } from "./components/ExpensesKpiGrid";
+import { CategoryExpenditureCard } from "./components/CategoryExpenditureCard";
+import { SpendingPacingCard } from "./components/SpendingPacingCard";
+import { ExpensesSubTabs } from "./components/ExpensesSubTabs";
+import { ExpensesLedgerTable } from "./components/ExpensesLedgerTable";
 
 export function ExpensesView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const requestId = useRef(0);
 
-  const loadSummary = useCallback((signal?: AbortSignal) => {
-    const currentRequestId = ++requestId.current;
-    setIsLoading(true);
-    setError(null);
-    return getDashboardSummary(signal)
-      .then((data) => {
-        if (currentRequestId === requestId.current) setSummary(data);
-      })
-      .catch((reason: unknown) => {
-        if (reason instanceof DOMException && reason.name === "AbortError") return;
-        if (currentRequestId !== requestId.current) return;
-        setError(
-          reason instanceof Error
-            ? reason.message
-            : "Unable to load expense data.",
-        );
-      })
-      .finally(() => {
-        if (currentRequestId === requestId.current) setIsLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    void loadSummary(controller.signal);
-    return () => controller.abort();
-  }, [loadSummary]);
-
-  const budgets = useMemo(
-    () => (summary ? toBudgets(summary) : []),
-    [summary],
-  );
-  const categoryShares: CategoryShare[] = [];
-  const total = summary?.expenses.totalAmount ?? 0;
+  const {
+    datePreset,
+    setDatePreset,
+    searchQuery,
+    setSearchQuery,
+    categoryFilter,
+    setCategoryFilter,
+    paymentFilter,
+    setPaymentFilter,
+    accountFilter,
+    setAccountFilter,
+    statusFilterActive,
+    setStatusFilterActive,
+    activeSubTab,
+    setActiveSubTab,
+    selectedIds,
+    toggleSelectAll,
+    toggleSelectRow,
+    sortBy,
+    setSortBy,
+    pageSize,
+    setPageSize,
+    currentPage,
+    setCurrentPage,
+    filteredExpenses,
+    paginatedExpenses,
+    totalPages,
+    totalAmount,
+    expenses,
+    categoryOptions,
+    paymentOptions,
+    accountOptions,
+    subTabCounts,
+    categoryShares,
+    paymentRailShares,
+    pacingValues,
+    isLoading,
+    loadError,
+    handleCategorySliceClick,
+    resetFilters,
+  } = useExpensesLedger();
 
   return (
-    <main className="mx-auto w-full max-w-350 space-y-6 p-4 pb-10 sm:p-6">
+    <div className="space-y-5 pb-10">
+      {/* Top Page Header */}
       <ExpensesHeader onOpenAddExpense={() => setIsAddModalOpen(true)} />
 
-      {isLoading && !summary ? (
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Loading expenses…
-        </p>
-      ) : error && !summary ? (
-        <p role="alert" className="text-sm text-rose-600 dark:text-rose-400">
-          {error}
-        </p>
-      ) : (
-        <ExpenseCategoryCard
-          total={total}
-          segments={categoryShares}
-          budgets={budgets}
-        />
-      )}
+      {/* Date Presets, Total Filtered Pill & Filter Bar */}
+      <ExpensesFilterToolbar
+        datePreset={datePreset}
+        onDatePresetChange={setDatePreset}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        categoryFilter={categoryFilter}
+        onCategoryChange={setCategoryFilter}
+        paymentFilter={paymentFilter}
+        onPaymentChange={setPaymentFilter}
+        accountFilter={accountFilter}
+        onAccountChange={setAccountFilter}
+        statusFilterActive={statusFilterActive}
+        onToggleStatusFilter={() => setStatusFilterActive((prev) => !prev)}
+        onReset={resetFilters}
+        totalAmount={totalAmount}
+        totalCount={filteredExpenses.length}
+        categoryOptions={categoryOptions}
+        paymentOptions={paymentOptions}
+        accountOptions={accountOptions}
+      />
 
+      {/* 6-Card KPI Strip */}
+      <ExpensesKpiGrid items={expenses} />
+
+      {/* 2-Column Analytics Section: Category-wise Expenditure + Spending Pacing */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <CategoryExpenditureCard
+            shares={categoryShares}
+            total={totalAmount}
+            activeCategoryFilter={categoryFilter}
+            onSelectCategory={handleCategorySliceClick}
+          />
+        </div>
+        <div className="lg:col-span-5">
+          <SpendingPacingCard paymentRailShares={paymentRailShares} pacingValues={pacingValues} />
+        </div>
+      </div>
+
+      {/* Sub-navigation Tabs */}
+      <ExpensesSubTabs activeTab={activeSubTab} onTabChange={setActiveSubTab} counts={subTabCounts} />
+
+      {/* Main Expenses Table */}
+      <ExpensesLedgerTable
+        items={paginatedExpenses}
+        selectedIds={selectedIds}
+        onToggleSelectAll={toggleSelectAll}
+        onToggleSelectRow={toggleSelectRow}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        totalItems={filteredExpenses.length}
+        totalPages={totalPages}
+      />
+
+      {isLoading && <p className="text-xs text-slate-500">Loading expenses...</p>}
+      {loadError && <p className="text-xs text-rose-600">{loadError}</p>}
+
+      {/* Reused AddTransactionDialog */}
       <AddTransactionDialog
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         initialType="expense"
       />
-    </main>
+    </div>
   );
-}
-
-function toBudgets(data: DashboardSummary): BudgetItem[] {
-  return data.expenses.budgetLimit > 0
-    ? [
-        {
-          id: "overall",
-          label: "Overall Monthly Budget",
-          spent: data.expenses.totalAmount,
-          limit: data.expenses.budgetLimit,
-          tone:
-            data.expenses.budgetSpentPercent > 100
-              ? "bad"
-              : data.expenses.budgetSpentPercent > 75
-                ? "accent"
-                : "good",
-        },
-      ]
-    : [];
 }
