@@ -92,9 +92,11 @@ export function normalizeBatchResponse(raw: any): StagedBatchResponse {
     ? raw.rows
     : Array.isArray(raw?.transactions)
       ? raw.transactions
-      : Array.isArray(raw?.stagedTransactions)
-        ? raw.stagedTransactions
-        : [];
+    : Array.isArray(raw?.stagedTransactions)
+      ? raw.stagedTransactions
+      : Array.isArray(raw?.records)
+        ? raw.records
+      : [];
 
   return {
     id: String(raw?.id || raw?.batchId || ""),
