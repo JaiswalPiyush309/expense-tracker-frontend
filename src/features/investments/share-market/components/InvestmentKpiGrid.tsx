@@ -1,11 +1,142 @@
 "use client";
 
-import { INVESTMENT_KPI_METRICS } from "../data/mock-data";
+import { KpiData } from "../api/investments-api";
 
-export function InvestmentKpiGrid() {
+interface Props {
+  kpis: KpiData | null;
+}
+
+function fmt(n: number): string {
+  return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtGain(n: number): string {
+  return `${n >= 0 ? "+" : ""}₹${fmt(Math.abs(n))}`;
+}
+
+export function InvestmentKpiGrid({ kpis }: Props) {
+  if (!kpis) {
+    return (
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="animate-pulse rounded-2xl bg-slate-100 h-28 dark:bg-slate-800"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  const totalReturnsPositive = kpis.totalReturns >= 0;
+  const todaysPnlPositive = kpis.todaysPnl >= 0;
+  const realizedPositive = kpis.realizedPnl >= 0;
+  const unrealizedPositive = kpis.unrealizedPnl >= 0;
+
+  const cards = [
+    {
+      id: "total-investment",
+      label: "TOTAL INVESTMENT",
+      iconSymbol: "🏛",
+      iconColor: "text-slate-500",
+      valuePrefix: null,
+      value: `₹${fmt(kpis.totalInvestment)}`,
+      valueColor: "text-slate-900 dark:text-white",
+      sublineText: `${kpis.activePositionsCount} Active Positions`,
+      sublineColor: "text-slate-500 dark:text-slate-400",
+      footerText: "Avg Deployed Cap",
+      footerPill: false,
+      footerPillTone: "slate" as const,
+    },
+    {
+      id: "portfolio-value",
+      label: "PORTFOLIO VALUE",
+      iconSymbol: "📈",
+      iconColor: "text-indigo-600",
+      valuePrefix: null,
+      value: `₹${fmt(kpis.portfolioValue)}`,
+      valueColor: "text-slate-900 dark:text-white",
+      sublineText: `${totalReturnsPositive ? "+" : ""}${kpis.totalInvestment > 0 ? (((kpis.portfolioValue - kpis.totalInvestment) / kpis.totalInvestment) * 100).toFixed(1) : "0.0"}% Net Worth`,
+      sublineColor: "text-emerald-600 dark:text-emerald-400 font-semibold",
+      footerText: "• Mark to Market",
+      footerPill: true,
+      footerPillTone: "emerald" as const,
+    },
+    {
+      id: "total-returns",
+      label: "TOTAL RETURNS",
+      iconSymbol: "↗",
+      iconColor: totalReturnsPositive ? "text-emerald-600" : "text-rose-600",
+      valuePrefix: totalReturnsPositive ? "+" : "",
+      value: `₹${fmt(Math.abs(kpis.totalReturns))}`,
+      valueColor: totalReturnsPositive
+        ? "text-emerald-600 dark:text-emerald-400"
+        : "text-rose-600 dark:text-rose-400",
+      sublineText: `${fmtGain(kpis.totalReturns)} All Time`,
+      sublineColor: totalReturnsPositive
+        ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+        : "text-rose-600 dark:text-rose-400 font-semibold",
+      footerText: "All Time P&L",
+      footerPill: false,
+      footerPillTone: "slate" as const,
+    },
+    {
+      id: "todays-pnl",
+      label: "TODAY'S P&L",
+      iconSymbol: "⚡",
+      iconColor: todaysPnlPositive ? "text-emerald-600" : "text-rose-600",
+      valuePrefix: null,
+      value: fmtGain(kpis.todaysPnl),
+      valueColor: todaysPnlPositive
+        ? "text-emerald-600 dark:text-emerald-400"
+        : "text-rose-600 dark:text-rose-400",
+      sublineText: todaysPnlPositive ? "↗ Gainers today" : "↘ Loss today",
+      sublineColor: todaysPnlPositive
+        ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+        : "text-rose-600 dark:text-rose-400 font-semibold",
+      footerText: "Intraday",
+      footerPill: false,
+      footerPillTone: "slate" as const,
+    },
+    {
+      id: "realized-pnl",
+      label: "REALIZED P&L",
+      iconSymbol: "🔒",
+      iconColor: "text-slate-500",
+      valuePrefix: realizedPositive ? "+" : "",
+      value: `₹${fmt(Math.abs(kpis.realizedPnl))}`,
+      valueColor: realizedPositive
+        ? "text-emerald-600 dark:text-emerald-400"
+        : "text-rose-600 dark:text-rose-400",
+      sublineText: `${kpis.closedPositionsCount} Closed positions`,
+      sublineColor: "text-slate-500 dark:text-slate-400",
+      footerText: "Tax Booked",
+      footerPill: false,
+      footerPillTone: "slate" as const,
+    },
+    {
+      id: "unrealized-pnl",
+      label: "UNREALIZED P&L",
+      iconSymbol: "◎",
+      iconColor: "text-indigo-600",
+      valuePrefix: unrealizedPositive ? "+" : "",
+      value: `₹${fmt(Math.abs(kpis.unrealizedPnl))}`,
+      valueColor: unrealizedPositive
+        ? "text-emerald-600 dark:text-emerald-400"
+        : "text-rose-600 dark:text-rose-400",
+      sublineText: `${kpis.activePositionsCount} Active Positions`,
+      sublineColor: unrealizedPositive
+        ? "text-emerald-600 dark:text-emerald-400 font-semibold"
+        : "text-rose-600 dark:text-rose-400 font-semibold",
+      footerText: `${kpis.activePositionsCount} Active Positions`,
+      footerPill: false,
+      footerPillTone: "slate" as const,
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-      {INVESTMENT_KPI_METRICS.map((kpi) => (
+      {cards.map((kpi) => (
         <div
           key={kpi.id}
           className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-2xs dark:border-slate-800 dark:bg-slate-900"
@@ -15,9 +146,7 @@ export function InvestmentKpiGrid() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                 {kpi.label}
               </span>
-              <span className={`text-xs ${kpi.iconColor}`}>
-                {kpi.iconSymbol}
-              </span>
+              <span className={`text-xs ${kpi.iconColor}`}>{kpi.iconSymbol}</span>
             </div>
 
             {kpi.valuePrefix && (
@@ -27,25 +156,14 @@ export function InvestmentKpiGrid() {
             )}
 
             <div
-              className={`${
-                kpi.valuePrefix ? "mt-0" : "mt-2"
-              } flex items-baseline tracking-tight`}
+              className={`${kpi.valuePrefix ? "mt-0" : "mt-2"} flex items-baseline tracking-tight`}
             >
               <span className={`text-lg font-bold ${kpi.valueColor}`}>
                 {kpi.value}
               </span>
-              {kpi.valueSuffix && (
-                <span className="text-xs font-semibold text-slate-400">
-                  {kpi.valueSuffix}
-                </span>
-              )}
             </div>
 
-            <div
-              className={`mt-1 text-[11px] ${
-                kpi.sublineColor ?? "text-slate-500"
-              }`}
-            >
+            <div className={`mt-1 text-[11px] ${kpi.sublineColor ?? "text-slate-500"}`}>
               {kpi.sublineText}
             </div>
           </div>

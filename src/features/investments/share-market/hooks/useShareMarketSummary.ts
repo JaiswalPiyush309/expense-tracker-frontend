@@ -1,53 +1,77 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
+import {
+  fetchDashboardMetrics,
+  fetchHoldings,
+  HoldingResponse,
+  ShareMarketDashboardResponse,
+} from "../api/investments-api";
 
-export interface PortfolioSummary {
-  totalInvestment: number;
-  portfolioValue: number;
-  totalReturns: number;
-  totalReturnsPercent: number;
-  todaysPnl: number;
-  todaysPnlPercent: number;
-  realizedPnl: number;
-  unrealizedPnl: number;
-}
+// ─── useShareMarketSummary ────────────────────────────────────────────────────
 
-// TODO: Replace with your real API call, e.g.:
-// const response = await fetch('/api/investments/summary');
-// const data: PortfolioSummary = await response.json();
-const MOCK_SUMMARY: PortfolioSummary = {
-  totalInvestment: 500000,
-  portfolioValue: 585000,
-  totalReturns: 85000,
-  totalReturnsPercent: 17.0,
-  todaysPnl: 4250,
-  todaysPnlPercent: 0.73,
-  realizedPnl: 25000,
-  unrealizedPnl: 60000,
-};
-
-interface State {
-  summary: PortfolioSummary | null;
+interface DashboardState {
+  data: ShareMarketDashboardResponse | null;
   isLoading: boolean;
   error: string | null;
 }
 
 export function useShareMarketSummary() {
-  const [state, setState] = useState<State>({
-    summary: null,
+  const [state, setState] = useState<DashboardState>({
+    data: null,
     isLoading: true,
     error: null,
   });
 
   const load = useCallback(() => {
     setState((s) => ({ ...s, isLoading: true, error: null }));
-    Promise.resolve(MOCK_SUMMARY)
-      .then((summary) => setState({ summary, isLoading: false, error: null }))
-      .catch(() =>
+    fetchDashboardMetrics()
+      .then((data) => setState({ data, isLoading: false, error: null }))
+      .catch((err: unknown) =>
         setState({
-          summary: null,
+          data: null,
           isLoading: false,
-          error: "Could not load your portfolio summary.",
+          error:
+            err instanceof Error
+              ? err.message
+              : "Could not load your portfolio summary.",
+        }),
+      );
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { ...state, refetch: load };
+}
+
+// ─── useHoldings ─────────────────────────────────────────────────────────────
+
+interface HoldingsState {
+  data: HoldingResponse[] | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export function useHoldings() {
+  const [state, setState] = useState<HoldingsState>({
+    data: null,
+    isLoading: true,
+    error: null,
+  });
+
+  const load = useCallback(() => {
+    setState((s) => ({ ...s, isLoading: true, error: null }));
+    fetchHoldings()
+      .then((data) => setState({ data, isLoading: false, error: null }))
+      .catch((err: unknown) =>
+        setState({
+          data: null,
+          isLoading: false,
+          error:
+            err instanceof Error
+              ? err.message
+              : "Could not load your holdings.",
         }),
       );
   }, []);
