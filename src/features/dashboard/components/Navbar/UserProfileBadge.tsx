@@ -44,7 +44,7 @@ export function UserProfileBadge({
       aria-haspopup={onClick ? "menu" : undefined}
       aria-expanded={onClick ? isExpanded : undefined}
       className={[
-        "w-full min-w-0 justify-start gap-2.5",
+        "min-w-0 justify-start gap-2.5",
         "px-2! py-1! text-left",
         className,
       ]
