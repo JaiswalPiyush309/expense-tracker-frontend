@@ -9,11 +9,16 @@ import {
 
 type ActivityType = CreateInvestmentTransactionInput["tradeType"];
 
-function todayLocal(): string {
+function localDateTime(): { date: string; time: string } {
   const date = new Date();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${date.getFullYear()}-${month}-${day}`;
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return {
+    date: `${date.getFullYear()}-${month}-${day}`,
+    time: `${hours}:${minutes}`,
+  };
 }
 
 interface Props {
@@ -34,7 +39,9 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
   const [charges, setCharges] = useState("0");
   const [broker, setBroker] = useState("Groww");
   const [tradeDate, setTradeDate] = useState("");
+  const [tradeTime, setTradeTime] = useState("");
   const [maxTradeDate, setMaxTradeDate] = useState("");
+  const [maxTradeTime, setMaxTradeTime] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,9 +55,11 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
     setAmount("");
     setCharges("0");
     setBroker("Groww");
-    const today = todayLocal();
-    setTradeDate(today);
-    setMaxTradeDate(today);
+    const now = localDateTime();
+    setTradeDate(now.date);
+    setTradeTime(now.time);
+    setMaxTradeDate(now.date);
+    setMaxTradeTime(now.time);
     setError(null);
   }, [isOpen]);
 
@@ -77,10 +86,16 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
       setError("Enter the investment symbol.");
       return;
     }
-    if (!tradeDate) {
-      setError("Choose the transaction date.");
+    if (!tradeDate || !tradeTime) {
+      setError("Choose the transaction date and time.");
       return;
     }
+    const localTradeDate = new Date(`${tradeDate}T${tradeTime}:00`);
+    if (Number.isNaN(localTradeDate.getTime())) {
+      setError("Enter a valid transaction date and time.");
+      return;
+    }
+    const tradeDateIso = localTradeDate.toISOString();
 
     let payload: CreateInvestmentTransactionInput;
     if (tradeType === "MTF_INTEREST") {
@@ -92,7 +107,7 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
       payload = {
         tickerSymbol: "MTF INTEREST",
         tradeType,
-        tradeDate,
+        tradeDate: tradeDateIso,
         chargesAndTaxes: interest,
         broker: broker.trim() || "Groww",
       };
@@ -110,7 +125,7 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
       payload = {
         tickerSymbol: tickerSymbol.trim().toUpperCase(),
         tradeType,
-        tradeDate,
+        tradeDate: tradeDateIso,
         quantity: 1,
         executionPrice: dividend,
         chargesAndTaxes: transactionCharges,
@@ -135,7 +150,7 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
       payload = {
         tickerSymbol: tickerSymbol.trim().toUpperCase(),
         tradeType,
-        tradeDate,
+        tradeDate: tradeDateIso,
         segment,
         quantity: shares,
         executionPrice,
@@ -237,10 +252,16 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
               </label>
             )}
 
-            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Transaction date
-              <input type="date" value={tradeDate} max={maxTradeDate || undefined} onChange={(event) => setTradeDate(event.target.value)} className={fieldClassName} />
-            </label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Transaction date
+                <input type="date" value={tradeDate} max={maxTradeDate || undefined} onChange={(event) => setTradeDate(event.target.value)} className={fieldClassName} />
+              </label>
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Transaction time
+                <input type="time" value={tradeTime} max={tradeDate === maxTradeDate ? maxTradeTime : undefined} onChange={(event) => setTradeTime(event.target.value)} className={fieldClassName} />
+              </label>
+            </div>
 
             {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300">{error}</p>}
           </div>

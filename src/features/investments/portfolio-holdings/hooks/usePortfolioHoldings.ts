@@ -74,10 +74,12 @@ function toTradeOrder(tx: {
     id: tx.id,
     type: tx.tradeType,
     shares: quantity,
-    date: new Date(tx.tradeDate).toLocaleDateString("en-IN", {
+    date: new Date(tx.tradeDate).toLocaleString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }),
     pricePerShare,
     totalAmount: quantity * pricePerShare,
