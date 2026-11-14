@@ -1,6 +1,7 @@
 "use client";
 
 import { RecentActivityItem } from "../api/investments-api";
+import Link from "next/link";
 
 interface Props {
   activity: RecentActivityItem[] | null;
@@ -16,6 +17,8 @@ function getBadgeTone(tradeType: string): BadgeTone {
       return "amber";
     case "DIVIDEND":
       return "emerald";
+    case "MTF_INTEREST":
+      return "amber";
     default:
       return "indigo";
   }
@@ -81,12 +84,12 @@ export function RecentInvestmentActivityCard({ activity }: Props) {
             </p>
           </div>
 
-          <button
-            type="button"
+          <Link
+            href="/investments/portfolio-holdings"
             className="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
           >
             Trade History →
-          </button>
+          </Link>
         </div>
 
         <div className="mt-4 space-y-3">
@@ -113,13 +116,17 @@ export function RecentInvestmentActivityCard({ activity }: Props) {
           {activity?.map((act) => {
             const tone = getBadgeTone(act.tradeType);
             const icon = getIconStyle(tone);
-            const amountFormatted =
-              act.tradeType.toUpperCase() === "SELL" && act.realizedPnl !== null
-                ? `+₹${act.realizedPnl.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`
-                : `₹${(act.quantity * act.executionPrice).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+            const tradeType = act.tradeType.toUpperCase();
+            const amount = act.quantity * act.executionPrice;
+            const amountValue = tradeType === "MTF_INTEREST"
+              ? -act.chargesAndTaxes
+              : tradeType === "SELL" && act.realizedPnl !== null
+                ? act.realizedPnl
+                : amount;
+            const amountFormatted = `${amountValue > 0 ? "+" : amountValue < 0 ? "−" : ""}₹${Math.abs(amountValue).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
             const amountPositive =
-              act.tradeType.toUpperCase() === "SELL" ||
-              act.tradeType.toUpperCase() === "DIVIDEND";
+              (tradeType === "SELL" && amountValue >= 0) ||
+              tradeType === "DIVIDEND";
 
             return (
               <div
@@ -143,11 +150,17 @@ export function RecentInvestmentActivityCard({ activity }: Props) {
                         {act.tradeType}
                       </span>
                     </div>
-                    <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-                      {act.quantity} shares @{" "}
-                      ₹{act.executionPrice.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
-                      {act.broker ? ` via ${act.broker}` : ""}
-                    </div>
+                    {tradeType === "MTF_INTEREST" ? (
+                      <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Margin interest charge</div>
+                    ) : (
+                      <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                        {act.quantity} shares @ ₹{act.executionPrice.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        {act.broker ? ` via ${act.broker}` : ""}
+                      </div>
+                    )}
+                    {tradeType !== "MTF_INTEREST" && act.chargesAndTaxes > 0 && (
+                      <div className="mt-0.5 text-[10px] text-slate-400">Charges &amp; taxes: ₹{act.chargesAndTaxes.toLocaleString("en-IN", { minimumFractionDigits: 2 })}</div>
+                    )}
                     <div className="mt-0.5 text-[10px] text-slate-400">
                       {formatDate(act.tradeDate)}
                     </div>
@@ -165,11 +178,13 @@ export function RecentInvestmentActivityCard({ activity }: Props) {
                     {amountFormatted}
                   </div>
                   <div className="mt-0.5 text-[10px] text-slate-400">
-                    {act.tradeType.toUpperCase() === "SELL"
-                      ? "Realized Gain"
-                      : act.tradeType.toUpperCase() === "DIVIDEND"
-                        ? "Bank Credited"
-                        : "Settled"}
+                    {tradeType === "SELL"
+                      ? act.realizedPnl === null ? "Sell proceeds" : "Realized P&L"
+                      : tradeType === "DIVIDEND"
+                        ? "Dividend"
+                        : tradeType === "MTF_INTEREST"
+                          ? "Interest paid"
+                          : "Trade value"}
                   </div>
                 </div>
               </div>
@@ -180,12 +195,7 @@ export function RecentInvestmentActivityCard({ activity }: Props) {
 
       <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] text-slate-400 dark:border-slate-800">
         <span>Showing last {activity ? activity.length : "—"} transactions</span>
-        <button
-          type="button"
-          className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
-        >
-          Download FY25-26 Statement
-        </button>
+        <span>Transaction data from your broker ledger</span>
       </div>
     </div>
   );

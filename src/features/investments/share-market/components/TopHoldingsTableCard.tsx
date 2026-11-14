@@ -1,6 +1,10 @@
-"use client";
+import Link from "next/link";
+import type { HoldingResponse } from "../api/investments-api";
 
-import { useHoldings } from "../hooks/useShareMarketSummary";
+interface Props {
+  holdings: HoldingResponse[] | null;
+  isLoading: boolean;
+}
 
 const AVATAR_COLORS = [
   "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300",
@@ -14,9 +18,7 @@ function fmt(n: number): string {
   return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-export function TopHoldingsTableCard() {
-  const { data: holdings, isLoading, error } = useHoldings();
-
+export function TopHoldingsTableCard({ holdings, isLoading }: Props) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
       {/* Header */}
@@ -27,25 +29,18 @@ export function TopHoldingsTableCard() {
           </h3>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
             {holdings
-              ? `Showing top ${holdings.length} active equity holdings weighted by value`
-              : "Active equity holdings weighted by value"}
+              ? `Showing ${holdings.length} holdings ranked by invested amount`
+              : "Holdings ranked by invested amount"}
           </p>
         </div>
 
-        <button
-          type="button"
+        <Link
+          href="/investments/portfolio-holdings"
           className="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
         >
           View All Holdings →
-        </button>
+        </Link>
       </div>
-
-      {/* Error */}
-      {error && (
-        <div className="px-5 py-4 text-sm text-rose-600 dark:text-rose-400">
-          ⚠ {error}
-        </div>
-      )}
 
       {/* Table */}
       <div className="overflow-x-auto">
@@ -60,7 +55,6 @@ export function TopHoldingsTableCard() {
               <th className="py-3 px-3 text-right">CURRENT VALUE (₹)</th>
               <th className="py-3 px-3 text-right">UNREALIZED P&amp;L</th>
               <th className="py-3 px-3 text-right">TOTAL RETURNS</th>
-              <th className="py-3 pr-5 pl-3 text-center">ACTIONS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-xs dark:divide-slate-800/70">
@@ -81,7 +75,6 @@ export function TopHoldingsTableCard() {
                       <div className="ml-auto h-3 w-14 rounded bg-slate-100 dark:bg-slate-800" />
                     </td>
                   ))}
-                  <td className="py-3.5 pr-5 pl-3" />
                 </tr>
               ))}
 
@@ -169,19 +162,16 @@ export function TopHoldingsTableCard() {
                     </span>
                   </td>
 
-                  {/* Actions */}
-                  <td className="py-3.5 pr-5 pl-3 text-center">
-                    <button
-                      type="button"
-                      className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800"
-                      aria-label="Stock actions"
-                    >
-                      ⋮
-                    </button>
-                  </td>
                 </tr>
               );
             })}
+            {!isLoading && holdings?.length === 0 && (
+              <tr>
+                <td colSpan={9} className="px-5 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                  No investment holdings recorded yet.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -204,16 +194,7 @@ export function TopHoldingsTableCard() {
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="font-semibold text-slate-600 hover:text-indigo-600 dark:text-slate-300"
-          >
-            Refresh Live Quotes
-          </button>
-          <span className="text-slate-300 dark:text-slate-700">|</span>
-          <span className="text-slate-400">Auto-syncing every 30s</span>
-        </div>
+        <span className="text-slate-400">Stored valuation from investment records</span>
       </div>
     </div>
   );

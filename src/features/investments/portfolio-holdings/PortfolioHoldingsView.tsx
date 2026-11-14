@@ -12,10 +12,6 @@ export function PortfolioHoldingsView() {
   const {
     searchQuery,
     setSearchQuery,
-    exchangeFilter,
-    setExchangeFilter,
-    sectorFilter,
-    setSectorFilter,
     capFilter,
     setCapFilter,
     pnlStatusFilter,
@@ -29,10 +25,14 @@ export function PortfolioHoldingsView() {
     toggleSelectRow,
     activeScrip,
     setActiveScripId,
-    currentPage,
-    setCurrentPage,
     filteredHoldings,
     resetFilters,
+    allHoldings,
+    isLoading,
+    error,
+    detailsError,
+    detailsLoading,
+    reload,
   } = usePortfolioHoldings();
 
   const showInspector = viewLayout === "split" && activeScrip !== null;
@@ -40,24 +40,27 @@ export function PortfolioHoldingsView() {
   return (
     <div className="space-y-4 p-5">
       {/* Page Header */}
-      <PortfolioHoldingsHeader />
+      <PortfolioHoldingsHeader onImported={reload} />
 
-      {/* 5-Card KPI Strip */}
-      <HoldingsKpiGrid />
+      {error && (
+        <div className="flex items-center gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-800 dark:bg-rose-950/30 dark:text-rose-300">
+          <span className="flex-1">{error}</span>
+          <button type="button" onClick={reload} className="font-semibold underline">Retry</button>
+        </div>
+      )}
 
-      {/* 4-Column Exposure & Yield Strip */}
-      <HoldingsExposureStrip />
+      {/* Portfolio metrics calculated from the API holdings response */}
+      <HoldingsKpiGrid holdings={allHoldings} />
+
+      <HoldingsExposureStrip holdings={allHoldings} />
 
       {/* Search, Filter & Sort Toolbar */}
       <HoldingsFilterToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        exchangeFilter={exchangeFilter}
-        onExchangeChange={setExchangeFilter}
-        sectorFilter={sectorFilter}
-        onSectorChange={setSectorFilter}
         capFilter={capFilter}
         onCapChange={setCapFilter}
+        assetClasses={[...new Set(allHoldings.map((holding) => holding.capCategory))]}
         pnlStatusFilter={pnlStatusFilter}
         onPnlStatusChange={setPnlStatusFilter}
         sortBy={sortBy}
@@ -80,8 +83,6 @@ export function PortfolioHoldingsView() {
               setActiveScripId(id);
               setViewLayout("split");
             }}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
           />
         </div>
 
@@ -90,10 +91,18 @@ export function PortfolioHoldingsView() {
             <ScripInspectorDrawer
               scrip={activeScrip}
               onClose={() => setActiveScripId(null)}
+              detailsError={detailsError}
+              detailsLoading={detailsLoading}
             />
           </div>
         )}
       </div>
+
+      {isLoading && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+          Loading your holdings…
+        </div>
+      )}
 
     </div>
   );

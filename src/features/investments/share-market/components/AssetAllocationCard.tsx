@@ -34,11 +34,6 @@ export function AssetAllocationCard({ allocation, totalValue }: Props) {
       return { ...item, dasharray, dashoffset, color: COLORS[i % COLORS.length] };
     }) ?? [];
 
-  const dotColors: Record<string, string> = {};
-  segments.forEach((s) => {
-    dotColors[s.category] = s.color;
-  });
-
   return (
     <div className="flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xs dark:border-slate-800 dark:bg-slate-900">
       {/* Header */}
@@ -48,7 +43,7 @@ export function AssetAllocationCard({ allocation, totalValue }: Props) {
             Asset Allocation
           </h3>
           <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-            Market capitalization distribution
+            Distribution by recorded asset category
           </p>
         </div>
         <span className="text-slate-400">⚙</span>
@@ -130,29 +125,6 @@ export function AssetAllocationCard({ allocation, totalValue }: Props) {
             ))}
       </div>
 
-      {/* Portfolio Risk Profile Box */}
-      <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-3 dark:border-slate-800 dark:bg-slate-800/50">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold text-slate-700 dark:text-slate-200">
-            🛡 Portfolio Risk Profile
-          </span>
-          <span className="font-bold text-emerald-600 dark:text-emerald-400">
-            Beta 0.88
-          </span>
-        </div>
-
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-          <div className="h-full w-3/5 rounded-full bg-linear-to-r from-emerald-500 via-indigo-500 to-amber-500" />
-        </div>
-
-        <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
-          <span>Conservative</span>
-          <span className="font-semibold text-slate-600 dark:text-slate-300">
-            Optimal Diversification
-          </span>
-          <span>Aggressive</span>
-        </div>
-      </div>
     </div>
   );
 }

@@ -6,10 +6,8 @@ import { ShareMarketHeader } from "./share-market/components/ShareMarketHeader";
 import { InvestmentKpiGrid } from "./share-market/components/InvestmentKpiGrid";
 import { PortfolioGrowthChartCard } from "./share-market/components/PortfolioGrowthChartCard";
 import { AssetAllocationCard } from "./share-market/components/AssetAllocationCard";
-import { MarketIndicesTickerCard } from "./share-market/components/MarketIndicesTickerCard";
 import { TopHoldingsTableCard } from "./share-market/components/TopHoldingsTableCard";
 import { RecentInvestmentActivityCard } from "./share-market/components/RecentInvestmentActivityCard";
-import { LedgerFlowIntelligenceCard } from "./share-market/components/LedgerFlowIntelligenceCard";
 import { useShareMarketSummary } from "./share-market/hooks/useShareMarketSummary";
 
 export function ShareMarketDashboardView() {
@@ -19,7 +17,10 @@ export function ShareMarketDashboardView() {
   return (
     <div className="space-y-5 p-5">
       {/* Top Breadcrumb & Action Header */}
-      <ShareMarketHeader onOpenAddInvestment={() => setIsAddModalOpen(true)} />
+      <ShareMarketHeader
+        onOpenAddInvestment={() => setIsAddModalOpen(true)}
+        onImported={refetch}
+      />
 
       {/* Error banner */}
       {error && (
@@ -68,7 +69,7 @@ export function ShareMarketDashboardView() {
           {/* Row 1: Portfolio Growth vs Benchmark (8 cols) + Asset Allocation (4 cols) */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <div className="lg:col-span-8">
-              <PortfolioGrowthChartCard />
+              <PortfolioGrowthChartCard growth={data?.portfolioGrowth ?? null} />
             </div>
             <div className="lg:col-span-4">
               <AssetAllocationCard
@@ -78,17 +79,10 @@ export function ShareMarketDashboardView() {
             </div>
           </div>
 
-          {/* Live NSE/BSE Market Indices & Sector Trend Strip */}
-          <MarketIndicesTickerCard />
-
           {/* Top Portfolio Holdings Table */}
-          <TopHoldingsTableCard />
+          <TopHoldingsTableCard holdings={data?.topHoldings ?? null} isLoading={isLoading} />
 
-          {/* Bottom Row: Recent Investment Activity + LedgerFlow Intelligence */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <RecentInvestmentActivityCard activity={data?.recentActivity ?? null} />
-            <LedgerFlowIntelligenceCard />
-          </div>
+          <RecentInvestmentActivityCard activity={data?.recentActivity ?? null} />
         </>
       )}
 

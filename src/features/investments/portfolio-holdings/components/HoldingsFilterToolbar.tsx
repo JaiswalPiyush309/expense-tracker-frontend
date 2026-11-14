@@ -5,12 +5,9 @@ import React from "react";
 interface HoldingsFilterToolbarProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
-  exchangeFilter: string;
-  onExchangeChange: (val: string) => void;
-  sectorFilter: string;
-  onSectorChange: (val: string) => void;
   capFilter: string;
   onCapChange: (val: string) => void;
+  assetClasses: string[];
   pnlStatusFilter: string;
   onPnlStatusChange: (val: string) => void;
   sortBy: string;
@@ -23,12 +20,9 @@ interface HoldingsFilterToolbarProps {
 export function HoldingsFilterToolbar({
   searchQuery,
   onSearchChange,
-  exchangeFilter,
-  onExchangeChange,
-  sectorFilter,
-  onSectorChange,
   capFilter,
   onCapChange,
+  assetClasses,
   pnlStatusFilter,
   onPnlStatusChange,
   sortBy,
@@ -65,44 +59,16 @@ export function HoldingsFilterToolbar({
         </span>
       </div>
 
-      {/* Exchange Filter */}
-      <select
-        value={exchangeFilter}
-        onChange={(e) => onExchangeChange(e.target.value)}
-        className="rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
-      >
-        <option value="ALL">Exch: All (NSE/BSE)</option>
-        <option value="NSE">Exch: NSE Only</option>
-        <option value="BSE">Exch: BSE Only</option>
-      </select>
-
-      {/* Sector Filter */}
-      <select
-        value={sectorFilter}
-        onChange={(e) => onSectorChange(e.target.value)}
-        className="rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
-      >
-        <option value="ALL">Sector: All Sectors</option>
-        <option value="Oil & Gas">Oil &amp; Gas</option>
-        <option value="Banking & Finance">Banking &amp; Finance</option>
-        <option value="IT">IT</option>
-        <option value="FMCG">FMCG</option>
-        <option value="Infrastructure">Infrastructure</option>
-        <option value="Automobile">Automobile</option>
-        <option value="Telecom">Telecom</option>
-        <option value="Pharma">Pharma</option>
-      </select>
-
-      {/* Cap Filter */}
+      {/* Asset class filter: the API does not currently return exchange or sector metadata. */}
       <select
         value={capFilter}
         onChange={(e) => onCapChange(e.target.value)}
         className="rounded-xl border border-slate-200 bg-slate-50/70 px-2.5 py-1.5 text-xs font-semibold text-slate-700 outline-none dark:border-slate-800 dark:bg-slate-950/60 dark:text-slate-300"
       >
-        <option value="ALL">Cap: All Caps</option>
-        <option value="Large Cap">Large Cap</option>
-        <option value="Mid Cap">Mid Cap</option>
-        <option value="Small Cap">Small Cap</option>
+        <option value="ALL">Asset class: All</option>
+        {assetClasses.map((assetClass) => (
+          <option key={assetClass} value={assetClass}>{assetClass}</option>
+        ))}
       </select>
 
       {/* P&L Status Filter */}

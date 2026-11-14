@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ChevronDown, Download, MoreVertical } from "lucide-react";
-import Link from "next/link";
+import { GrowwImportButton } from "../../components/GrowwImportButton";
 
-export function PortfolioHoldingsHeader() {
+export function PortfolioHoldingsHeader({ onImported }: { onImported: () => void }) {
   return (
     <PageHeader
       title="Portfolio Holdings"
@@ -14,13 +14,7 @@ export function PortfolioHoldingsHeader() {
       ]}
       actions={
         <>
-          <Link
-            href="/import-statements"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-          >
-            <span>↑</span>
-            <span>Import</span>
-          </Link>
+          <GrowwImportButton onImported={onImported} />
 
           <Button
             type="button"

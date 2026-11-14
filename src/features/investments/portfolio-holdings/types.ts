@@ -1,15 +1,6 @@
-export type HoldingExchange = "NSE" | "BSE";
-export type HoldingCapCategory = "Large Cap" | "Mid Cap" | "Small Cap" | "ETF";
-export type HoldingSector =
-  | "Oil & Gas"
-  | "Banking & Finance"
-  | "IT"
-  | "FMCG"
-  | "Infrastructure"
-  | "Automobile"
-  | "Telecom"
-  | "Pharma"
-  | "Consumer Durables";
+export type HoldingExchange = "NSE" | "BSE" | "—";
+export type HoldingCapCategory = string;
+export type HoldingSector = string;
 
 export interface HoldingsKpiCardItem {
   id: string;
@@ -29,11 +20,15 @@ export interface HoldingsKpiCardItem {
 
 export interface ScripTradeOrder {
   id: string;
-  type: "BUY" | "SELL";
+  type: string;
   shares: number;
   date: string;
   pricePerShare: number;
   totalAmount: number;
+  chargesAndTaxes?: number;
+  realizedPnl?: number | null;
+  broker?: string;
+  segment?: string | null;
 }
 
 export interface PortfolioHoldingRow {

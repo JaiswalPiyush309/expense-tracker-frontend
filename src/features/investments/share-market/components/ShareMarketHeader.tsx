@@ -2,22 +2,21 @@
 
 import { Button } from "@/components/ui/Button";
 import {
-  ArrowLeftRight,
   ChevronDown,
   Download,
   MoreVertical,
   Plus,
 } from "lucide-react";
-import Link from "next/link";
+import { GrowwImportButton } from "../../components/GrowwImportButton";
 
 interface ShareMarketHeaderProps {
   onOpenAddInvestment: () => void;
-  onOpenBuySell?: () => void;
+  onImported: () => void;
 }
 
 export function ShareMarketHeader({
   onOpenAddInvestment,
-  onOpenBuySell,
+  onImported,
 }: ShareMarketHeaderProps) {
   return (
     <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
@@ -36,8 +35,7 @@ export function ShareMarketHeader({
           Share Market Dashboard
         </h1>
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-          Monitor your investment portfolio, track real-time NSE/BSE movements,
-          and evaluate capital performance in one place.
+          Review recorded holdings, transaction activity, and portfolio performance.
         </p>
       </div>
 
@@ -53,24 +51,7 @@ export function ShareMarketHeader({
           <span>Add Investment</span>
         </Button>
 
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={onOpenBuySell}
-          className="gap-1.5 px-3.5 py-2 text-xs"
-        >
-          <ArrowLeftRight className="h-4 w-4" />
-          <span>Buy / Sell</span>
-        </Button>
-
-        <Link
-          href="/import-statements"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
-        >
-          <span>📄</span>
-          <span>Import Trades</span>
-        </Link>
+        <GrowwImportButton onImported={onImported} />
 
         <Button
           type="button"

@@ -10,8 +10,6 @@ interface HoldingsListTableProps {
   onToggleSelectAll: () => void;
   onToggleSelectRow: (id: string) => void;
   onSelectScripForInspector: (id: string) => void;
-  currentPage: number;
-  onPageChange: (page: number) => void;
 }
 
 export function HoldingsListTable({
@@ -21,8 +19,6 @@ export function HoldingsListTable({
   onToggleSelectAll,
   onToggleSelectRow,
   onSelectScripForInspector,
-  currentPage,
-  onPageChange,
 }: HoldingsListTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-2xs dark:border-slate-800 dark:bg-slate-900">
@@ -41,26 +37,10 @@ export function HoldingsListTable({
             Holdings List
           </h3>
           <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            14 Scrips
+            {holdings.length} Holdings
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
-          >
-            <span>▤</span>
-            <span>Columns (10/10)</span>
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300"
-          >
-            <span>↓</span>
-            <span>CSV</span>
-          </button>
-        </div>
       </div>
 
       {/* Table */}
@@ -73,12 +53,19 @@ export function HoldingsListTable({
               <th className="py-3 px-2 text-right">QTY</th>
               <th className="py-3 px-2.5 text-right">AVG (₹)</th>
               <th className="py-3 px-2.5 text-right">INVESTED (₹)</th>
-              <th className="py-3 px-2.5 text-right">CMP (₹)</th>
+              <th className="py-3 px-2.5 text-right">VALUE / UNIT (₹)</th>
               <th className="py-3 px-2.5 text-right">CUR. VALUE (₹)</th>
               <th className="py-3 pr-4 pl-2 text-right">NET P&amp;L</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-xs dark:divide-slate-800/70">
+            {holdings.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+                  No holdings match these filters.
+                </td>
+              </tr>
+            )}
             {holdings.map((row) => {
               const isChecked = selectedRowIds.includes(row.id);
               const isInspected = activeScripId === row.id;
@@ -199,51 +186,9 @@ export function HoldingsListTable({
 
       {/* Footer & Pagination */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-4 py-3 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        <div className="flex items-center gap-3">
-          <span>
-            Showing{" "}
-            <strong className="text-slate-800 dark:text-slate-200">
-              1–{holdings.length}
-            </strong>{" "}
-            of{" "}
-            <strong className="text-slate-800 dark:text-slate-200">14</strong>{" "}
-            holdings
-          </span>
-          <span className="text-slate-300 dark:text-slate-700">|</span>
-          <span>Total Portfolio Weight: 100%</span>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            disabled={currentPage === 1}
-            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 disabled:opacity-40 dark:border-slate-800"
-          >
-            ‹
-          </button>
-          {[1, 2].map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => onPageChange(p)}
-              className={`h-7 w-7 rounded-lg text-xs font-bold transition ${
-                currentPage === p
-                  ? "bg-indigo-600 text-white"
-                  : "border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-300"
-              }`}
-            >
-              {p}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => onPageChange(Math.min(2, currentPage + 1))}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-slate-800"
-          >
-            ›
-          </button>
-        </div>
+        <span>
+          Showing {holdings.length} filtered holdings · portfolio weight based on recorded current value
+        </span>
       </div>
     </div>
   );

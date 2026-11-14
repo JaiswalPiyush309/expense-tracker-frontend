@@ -29,7 +29,7 @@ export function InvestmentKpiGrid({ kpis }: Props) {
   }
 
   const totalReturnsPositive = kpis.totalReturns >= 0;
-  const todaysPnlPositive = kpis.todaysPnl >= 0;
+  const todaysPnlPositive = (kpis.todaysPnl ?? 0) >= 0;
   const realizedPositive = kpis.realizedPnl >= 0;
   const unrealizedPositive = kpis.unrealizedPnl >= 0;
 
@@ -58,7 +58,7 @@ export function InvestmentKpiGrid({ kpis }: Props) {
       valueColor: "text-slate-900 dark:text-white",
       sublineText: `${totalReturnsPositive ? "+" : ""}${kpis.totalInvestment > 0 ? (((kpis.portfolioValue - kpis.totalInvestment) / kpis.totalInvestment) * 100).toFixed(1) : "0.0"}% Net Worth`,
       sublineColor: "text-emerald-600 dark:text-emerald-400 font-semibold",
-      footerText: "• Mark to Market",
+      footerText: "Stored valuation",
       footerPill: true,
       footerPillTone: "emerald" as const,
     },
@@ -84,17 +84,17 @@ export function InvestmentKpiGrid({ kpis }: Props) {
       id: "todays-pnl",
       label: "TODAY'S P&L",
       iconSymbol: "⚡",
-      iconColor: todaysPnlPositive ? "text-emerald-600" : "text-rose-600",
+      iconColor: kpis.todaysPnl === null ? "text-slate-500" : todaysPnlPositive ? "text-emerald-600" : "text-rose-600",
       valuePrefix: null,
-      value: fmtGain(kpis.todaysPnl),
-      valueColor: todaysPnlPositive
+      value: kpis.todaysPnl === null ? "—" : fmtGain(kpis.todaysPnl),
+      valueColor: kpis.todaysPnl === null ? "text-slate-500 dark:text-slate-400" : todaysPnlPositive
         ? "text-emerald-600 dark:text-emerald-400"
         : "text-rose-600 dark:text-rose-400",
-      sublineText: todaysPnlPositive ? "↗ Gainers today" : "↘ Loss today",
-      sublineColor: todaysPnlPositive
+      sublineText: kpis.todaysPnl === null ? "Live market data unavailable" : todaysPnlPositive ? "↗ Gainers today" : "↘ Loss today",
+      sublineColor: kpis.todaysPnl === null ? "text-slate-500 dark:text-slate-400" : todaysPnlPositive
         ? "text-emerald-600 dark:text-emerald-400 font-semibold"
         : "text-rose-600 dark:text-rose-400 font-semibold",
-      footerText: "Intraday",
+      footerText: kpis.todaysPnl === null ? "Requires market quote feed" : "Intraday",
       footerPill: false,
       footerPillTone: "slate" as const,
     },
