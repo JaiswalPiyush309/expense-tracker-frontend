@@ -33,7 +33,8 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
   const [amount, setAmount] = useState("");
   const [charges, setCharges] = useState("0");
   const [broker, setBroker] = useState("Groww");
-  const [tradeDate, setTradeDate] = useState(todayLocal);
+  const [tradeDate, setTradeDate] = useState("");
+  const [maxTradeDate, setMaxTradeDate] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,7 +48,9 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
     setAmount("");
     setCharges("0");
     setBroker("Groww");
-    setTradeDate(todayLocal());
+    const today = todayLocal();
+    setTradeDate(today);
+    setMaxTradeDate(today);
     setError(null);
   }, [isOpen]);
 
@@ -236,7 +239,7 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
 
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
               Transaction date
-              <input type="date" value={tradeDate} max={todayLocal()} onChange={(event) => setTradeDate(event.target.value)} className={fieldClassName} />
+              <input type="date" value={tradeDate} max={maxTradeDate || undefined} onChange={(event) => setTradeDate(event.target.value)} className={fieldClassName} />
             </label>
 
             {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs font-medium text-rose-700 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300">{error}</p>}
