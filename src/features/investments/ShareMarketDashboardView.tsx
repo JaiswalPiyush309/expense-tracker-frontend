@@ -1,7 +1,7 @@
 "use client";
 
-import { AddTransactionDialog } from "@/components/transactions/add-transaction";
 import { useState } from "react";
+import { AddInvestmentDialog } from "./components/AddInvestmentDialog";
 import { ShareMarketHeader } from "./share-market/components/ShareMarketHeader";
 import { InvestmentKpiGrid } from "./share-market/components/InvestmentKpiGrid";
 import { PortfolioGrowthChartCard } from "./share-market/components/PortfolioGrowthChartCard";
@@ -86,10 +86,10 @@ export function ShareMarketDashboardView() {
         </>
       )}
 
-      {/* Reused AddTransactionDialog */}
-      <AddTransactionDialog
+      <AddInvestmentDialog
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
+        onSaved={refetch}
       />
     </div>
   );

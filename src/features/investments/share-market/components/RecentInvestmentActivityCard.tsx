@@ -142,7 +142,7 @@ export function RecentInvestmentActivityCard({ activity }: Props) {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-bold text-slate-900 dark:text-white">
-                        {act.tradeType} — {act.tickerSymbol}
+                        {tradeType === "MTF_INTEREST" ? "MTF interest paid" : `${act.tradeType} — ${act.tickerSymbol}`}
                       </span>
                       <span
                         className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${getBadgeStyle(tone)}`}
@@ -154,7 +154,9 @@ export function RecentInvestmentActivityCard({ activity }: Props) {
                       <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">Margin interest charge</div>
                     ) : (
                       <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-                        {act.quantity} shares @ ₹{act.executionPrice.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+                        {tradeType === "DIVIDEND"
+                          ? `Dividend income ${amountFormatted}`
+                          : `${act.quantity} shares @ ₹${act.executionPrice.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`}
                         {act.broker ? ` via ${act.broker}` : ""}
                       </div>
                     )}

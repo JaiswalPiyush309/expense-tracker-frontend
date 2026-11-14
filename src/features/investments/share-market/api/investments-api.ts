@@ -97,6 +97,17 @@ export interface GrowwImportResult {
   errors: { row: number; symbol: string; error: string }[];
 }
 
+export interface CreateInvestmentTransactionInput {
+  tickerSymbol: string;
+  tradeType: "BUY" | "SELL" | "DIVIDEND" | "MTF_INTEREST";
+  tradeDate: string;
+  segment?: "DELIVERY" | "MTF";
+  quantity?: number;
+  executionPrice?: number;
+  chargesAndTaxes?: number;
+  broker?: string;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function authHeaders(): HeadersInit {
@@ -182,4 +193,24 @@ export async function importGrowwTrades(file: File): Promise<GrowwImportResult> 
 
   const payload = (await res.json()) as { data: GrowwImportResult };
   return payload.data;
+}
+
+export async function createInvestmentTransaction(
+  transaction: CreateInvestmentTransactionInput,
+): Promise<void> {
+  let res: Response;
+  try {
+    res = await fetch(`${getApiBaseUrl()}/investments/trade`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(transaction),
+    });
+  } catch {
+    throw new Error("Unable to reach the server. Please check your connection.");
+  }
+
+  if (!res.ok) {
+    const payload = (await res.json().catch(() => null)) as { message?: string } | null;
+    throw new Error(payload?.message ?? `Could not save investment activity (${res.status}).`);
+  }
 }

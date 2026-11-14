@@ -73,7 +73,11 @@ export function ScripInspectorDrawer({
                   <span className="text-slate-500 dark:text-slate-400">{tx.date}</span>
                 </div>
                 <div className="mt-1 flex items-center justify-between gap-2 font-semibold text-slate-800 dark:text-slate-200">
-                  <span>{tx.shares} units @ {money(tx.pricePerShare)}</span>
+                  {tx.type === "DIVIDEND" ? (
+                    <span>Dividend income</span>
+                  ) : (
+                    <span>{tx.shares} units @ {money(tx.pricePerShare)}</span>
+                  )}
                   <span>{money(tx.totalAmount)}</span>
                 </div>
                 <div className="mt-1 flex flex-wrap justify-between gap-x-2 text-[10px] text-slate-500 dark:text-slate-400">
