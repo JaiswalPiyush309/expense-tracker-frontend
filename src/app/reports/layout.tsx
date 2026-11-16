@@ -3,6 +3,7 @@
 import { Navbar } from "@/features/dashboard/components/Navbar/Navbar";
 import Sidebar from "@/features/dashboard/components/Sidebar/Sidebar";
 import { useState, type ReactNode } from "react";
+import { RequireAuth } from "@/components/auth/RequireAuth";
 
 export default function ReportsLayout({
   children,
@@ -12,6 +13,7 @@ export default function ReportsLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
+    <RequireAuth>
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900">
       <Sidebar
         mobileOpen={mobileOpen}
@@ -22,5 +24,6 @@ export default function ReportsLayout({
         <main className="min-w-0 flex-1">{children}</main>
       </div>
     </div>
+    </RequireAuth>
   );
 }

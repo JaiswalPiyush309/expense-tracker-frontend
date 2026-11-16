@@ -110,12 +110,12 @@ export const sidebarGroups: SidebarGroup[] = [
     items: [
       {
         label: "Share Market Dashboard",
-        href: "/dashboard/share-market",
+        href: "/investments/share-market",
         icon: BriefcaseBusiness,
       },
       {
         label: "Portfolio Holdings",
-        href: "/dashboard/share-market/holdings",
+        href: "/investments/portfolio-holdings",
         icon: Wallet,
       },
       {
