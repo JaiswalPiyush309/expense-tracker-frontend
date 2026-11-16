@@ -98,6 +98,7 @@ export interface GrowwImportResult {
 }
 
 export interface CreateInvestmentTransactionInput {
+  accountId?: string;
   tickerSymbol: string;
   tradeType: "BUY" | "SELL" | "DIVIDEND" | "MTF_INTEREST";
   tradeDate: string;
@@ -170,10 +171,11 @@ export async function fetchHoldingDetails(
   return res.json() as Promise<HoldingDetailsResponse>;
 }
 
-export async function importGrowwTrades(file: File): Promise<GrowwImportResult> {
+export async function importGrowwTrades(file: File, accountId?: string): Promise<GrowwImportResult> {
   const token = getAccessToken();
   const formData = new FormData();
   formData.append("file", file);
+  if (accountId) formData.append("accountId", accountId);
 
   let res: Response;
   try {

@@ -6,6 +6,7 @@ import {
   createInvestmentTransaction,
   type CreateInvestmentTransactionInput,
 } from "../share-market/api/investments-api";
+import { getAccountDropdownOptions, type AccountDropdownOption } from "@/features/profile/accounts-api";
 
 type ActivityType = CreateInvestmentTransactionInput["tradeType"];
 
@@ -44,6 +45,8 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
   const [maxTradeTime, setMaxTradeTime] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [accounts, setAccounts] = useState<AccountDropdownOption[]>([]);
+  const [accountId, setAccountId] = useState("");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -61,6 +64,11 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
     setMaxTradeDate(now.date);
     setMaxTradeTime(now.time);
     setError(null);
+    getAccountDropdownOptions().then((items) => {
+      setAccounts(items);
+      const groww = items.find((item) => /groww/i.test(`${item.name} ${item.bankName ?? ""}`));
+      setAccountId(groww?.id ?? "");
+    }).catch(() => setAccounts([]));
   }, [isOpen]);
 
   useEffect(() => {
@@ -105,6 +113,7 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
         return;
       }
       payload = {
+        accountId: accountId || undefined,
         tickerSymbol: "MTF INTEREST",
         tradeType,
         tradeDate: tradeDateIso,
@@ -123,6 +132,7 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
         return;
       }
       payload = {
+        accountId: accountId || undefined,
         tickerSymbol: tickerSymbol.trim().toUpperCase(),
         tradeType,
         tradeDate: tradeDateIso,
@@ -148,6 +158,7 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
         return;
       }
       payload = {
+        accountId: accountId || undefined,
         tickerSymbol: tickerSymbol.trim().toUpperCase(),
         tradeType,
         tradeDate: tradeDateIso,
@@ -202,6 +213,15 @@ export function AddInvestmentDialog({ isOpen, onClose, onSaved }: Props) {
                 <option value="DIVIDEND">Dividend received</option>
                 <option value="MTF_INTEREST">MTF interest paid</option>
               </select>
+            </label>
+
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Cash account
+              <select value={accountId} onChange={(event) => setAccountId(event.target.value)} className={fieldClassName}>
+                <option value="">Do not update an account balance</option>
+                {accounts.map((account) => <option key={account.id} value={account.id}>{account.name}{account.bankName ? ` · ${account.bankName}` : ""}</option>)}
+              </select>
+              <span className="mt-1 block font-normal text-slate-500">Buy, sell, dividend and interest entries will update this account’s balance.</span>
             </label>
 
             {tradeType !== "MTF_INTEREST" && (

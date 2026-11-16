@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { importGrowwTrades, type GrowwImportResult } from "../share-market/api/investments-api";
+import { getAccountDropdownOptions, type AccountDropdownOption } from "@/features/profile/accounts-api";
 
 interface Props {
   onImported: () => void;
@@ -12,6 +13,16 @@ export function GrowwImportButton({ onImported }: Props) {
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<GrowwImportResult | null>(null);
+  const [accounts, setAccounts] = useState<AccountDropdownOption[]>([]);
+  const [accountId, setAccountId] = useState("");
+
+  useEffect(() => {
+    getAccountDropdownOptions().then((items) => {
+      setAccounts(items);
+      const groww = items.find((item) => /groww/i.test(`${item.name} ${item.bankName ?? ""}`));
+      setAccountId(groww?.id ?? "");
+    }).catch(() => setAccounts([]));
+  }, []);
 
   async function handleFile(file?: File) {
     if (!file) return;
@@ -19,7 +30,7 @@ export function GrowwImportButton({ onImported }: Props) {
     setResult(null);
     setIsImporting(true);
     try {
-      const imported = await importGrowwTrades(file);
+      const imported = await importGrowwTrades(file, accountId || undefined);
       setResult(imported);
       onImported();
     } catch (err: unknown) {
@@ -32,6 +43,10 @@ export function GrowwImportButton({ onImported }: Props) {
 
   return (
     <div className="relative">
+      <select aria-label="Account for Groww trade cash movements" value={accountId} onChange={(event) => setAccountId(event.target.value)} className="mr-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+        <option value="">No wallet balance update</option>
+        {accounts.map((account) => <option key={account.id} value={account.id}>{account.name}</option>)}
+      </select>
       <input
         ref={inputRef}
         type="file"
