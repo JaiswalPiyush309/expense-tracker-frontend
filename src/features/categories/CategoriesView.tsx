@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useCategoriesTaxonomy } from "./hooks/useCategoriesTaxonomy";
 import { CategoriesHeader } from "./components/CategoriesHeader";
 import { CategoriesKpiGrid } from "./components/CategoriesKpiGrid";
+import { CategoriesFilterToolbar } from "./components/CategoriesFilterToolbar";
 
 export function CategoriesView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -37,6 +38,25 @@ export function CategoriesView() {
 
       {/* 4-Card KPI Strip */}
       <CategoriesKpiGrid />
+
+      {/* Taxonomy Tabs & Search/Filter Bar */}
+      <CategoriesFilterToolbar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        typeFilter={typeFilter}
+        onTypeFilterChange={setTypeFilter}
+        hierarchyFilter={hierarchyFilter}
+        onHierarchyFilterChange={setHierarchyFilter}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        onReset={resetFilters}
+      />
     </div>
   );
 }
