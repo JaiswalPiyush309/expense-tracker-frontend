@@ -1,9 +1,6 @@
 import {
   CategoryEnvelopeItem,
   CategoryFilterTabId,
-  HighVelocityClusterItem,
-  IncomeRailDistributionItem,
-  TopSpendingEnvelopeItem,
 } from "../types";
 
 export const CATEGORY_FILTER_TABS: {
@@ -17,98 +14,6 @@ export const CATEGORY_FILTER_TABS: {
   { id: "transfers", label: "Transfers", count: 2 },
   { id: "investments", label: "Investments", count: 1 },
   { id: "lending", label: "Lending & Borrowing", count: 1 },
-];
-
-export const TOP_SPENDING_ENVELOPES: TopSpendingEnvelopeItem[] = [
-  {
-    id: "top-housing",
-    name: "Housing & Rent",
-    amountFormatted: "₹25,000",
-    shareFormatted: "(31.8%)",
-    percentage: 68,
-    barColorClass: "bg-indigo-600",
-  },
-  {
-    id: "top-shopping",
-    name: "Shopping & Lifestyle",
-    amountFormatted: "₹11,800",
-    shareFormatted: "(15.0%)",
-    percentage: 42,
-    barColorClass: "bg-rose-500",
-  },
-  {
-    id: "top-food",
-    name: "Food & Dining",
-    amountFormatted: "₹9,200",
-    shareFormatted: "(11.7%)",
-    percentage: 34,
-    barColorClass: "bg-amber-500",
-  },
-  {
-    id: "top-entertainment",
-    name: "Entertainment & OTT",
-    amountFormatted: "₹7,000",
-    shareFormatted: "(8.9%)",
-    percentage: 26,
-    barColorClass: "bg-indigo-500",
-  },
-];
-
-export const HIGH_VELOCITY_CLUSTERS: HighVelocityClusterItem[] = [
-  {
-    id: "vel-food",
-    title: "Swiggy, Zomato & Dining",
-    subtitle: "Food & Dining Master",
-    txnCountLabel: "18 txns",
-    iconSymbol: "🍴",
-    iconBg: "bg-rose-50 dark:bg-rose-500/15",
-    iconColor: "text-rose-600 dark:text-rose-400",
-  },
-  {
-    id: "vel-grocery",
-    title: "Blinkit, Zepto & Groceries",
-    subtitle: "Daily Essentials",
-    txnCountLabel: "15 txns",
-    iconSymbol: "🛒",
-    iconBg: "bg-emerald-50 dark:bg-emerald-500/15",
-    iconColor: "text-emerald-600 dark:text-emerald-400",
-  },
-  {
-    id: "vel-fuel",
-    title: "HPCL Fuel & Uber Metro",
-    subtitle: "Transportation",
-    txnCountLabel: "9 txns",
-    iconSymbol: "⛽",
-    iconBg: "bg-indigo-50 dark:bg-indigo-500/15",
-    iconColor: "text-indigo-600 dark:text-indigo-400",
-  },
-];
-
-export const INCOME_RAILS_DISTRIBUTION: IncomeRailDistributionItem[] = [
-  {
-    id: "rail-salary",
-    label: "Primary Salary",
-    percentage: "86.0%",
-    dotColorClass: "bg-emerald-600",
-  },
-  {
-    id: "rail-advisory",
-    label: "Advisory Retainers",
-    percentage: "8.4%",
-    dotColorClass: "bg-indigo-600",
-  },
-  {
-    id: "rail-dividends",
-    label: "Equity Dividends",
-    percentage: "3.5%",
-    dotColorClass: "bg-emerald-400",
-  },
-  {
-    id: "rail-cashback",
-    label: "Cashback & CRED",
-    percentage: "2.1%",
-    dotColorClass: "bg-slate-300 dark:bg-slate-600",
-  },
 ];
 
 export const CATEGORY_ENVELOPES_MOCK: CategoryEnvelopeItem[] = [

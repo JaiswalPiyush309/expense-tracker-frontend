@@ -5,6 +5,7 @@ import { useCategoriesTaxonomy } from "./hooks/useCategoriesTaxonomy";
 import { CategoriesHeader } from "./components/CategoriesHeader";
 import { CategoriesKpiGrid } from "./components/CategoriesKpiGrid";
 import { CategoriesFilterToolbar } from "./components/CategoriesFilterToolbar";
+import { CategoriesAnalyticsRow } from "./components/CategoriesAnalyticsRow";
 
 export function CategoriesView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -57,6 +58,9 @@ export function CategoriesView() {
         onViewModeChange={setViewMode}
         onReset={resetFilters}
       />
+
+      {/* 3-Column Analytics Row */}
+      <CategoriesAnalyticsRow />
     </div>
   );
 }

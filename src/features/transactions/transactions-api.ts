@@ -44,7 +44,15 @@ interface TransactionPage {
   meta: { totalPages: number; page: number };
 }
 
-export async function fetchAllTransactions(): Promise<ApiTransaction[]> {
+export interface TransactionFilters {
+  type?: ApiTransactionType;
+  startDate?: string;
+  endDate?: string;
+}
+
+export async function fetchAllTransactions(
+  filters: TransactionFilters = {},
+): Promise<ApiTransaction[]> {
   const token = getAccessToken();
   if (!token) throw new Error("Your session has expired. Please sign in again.");
 
@@ -53,8 +61,13 @@ export async function fetchAllTransactions(): Promise<ApiTransaction[]> {
   let totalPages = 1;
 
   do {
+    const query = new URLSearchParams({ page: String(page), limit: "100" });
+    if (filters.type) query.set("type", filters.type);
+    if (filters.startDate) query.set("startDate", filters.startDate);
+    if (filters.endDate) query.set("endDate", filters.endDate);
+
     const response = await fetch(
-      `${getApiBaseUrl()}/transactions?page=${page}&limit=100`,
+      `${getApiBaseUrl()}/transactions?${query.toString()}`,
       {
         headers: {
           Accept: "application/json",
