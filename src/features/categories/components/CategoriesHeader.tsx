@@ -12,7 +12,7 @@ export function CategoriesHeader({ onOpenAddCategory }: CategoriesHeaderProps) {
   return (
     <PageHeader
       title="Categories"
-      description="Organize your income and expenses with customizable categories and subcategories."
+      description="Organize income and expenses, review monthly category activity, and manage your custom categories."
       actions={
         <Button
           type="button"

@@ -91,8 +91,12 @@ export function CategoriesKpiGrid() {
         if (active) setIsLoading(false);
       });
 
+    const refresh = () => setRetry((attempt) => attempt + 1);
+    window.addEventListener("categories:changed", refresh);
+
     return () => {
       active = false;
+      window.removeEventListener("categories:changed", refresh);
     };
   }, [retry]);
 

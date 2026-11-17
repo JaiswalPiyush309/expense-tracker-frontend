@@ -1,34 +1,15 @@
-export type CategoryGroupType =
-  | "expense"
-  | "income"
-  | "transfer"
-  | "investment"
-  | "lending";
+export type CategoryGroupType = "expense" | "income";
 
-export type CategoryFilterTabId =
-  | "all"
-  | "expense"
-  | "income"
-  | "transfers"
-  | "investments"
-  | "lending";
+export type CategoryFilterTabId = "all" | CategoryGroupType;
 
 export interface CategoryEnvelopeItem {
   id: string;
   group: CategoryGroupType;
   name: string;
-  hierarchySubtitle: string;
+  icon: string | null;
+  color: string | null;
+  isSystem: boolean;
+  isCustom: boolean;
   monthlyVolume: number;
-  amountWholeFormatted: string;
-  amountDecimalFormatted: string;
   txnCount: number;
-  txnLabel: string;
-  subcategories: string[];
-  extraSubcategoryCount?: number;
-  statusLabel: string;
-  statusDotColor: string;
-  amountColorClass?: string;
-  iconSymbol: string;
-  iconBg: string;
-  iconColor: string;
 }
