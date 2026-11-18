@@ -65,17 +65,17 @@ export const sidebarGroups: SidebarGroup[] = [
       },
       {
         label: "Categories",
-        href: "/dashboard/categories",
+        href: "/categories",
         icon: Tags,
       },
       {
         label: "Bank Accounts",
-        href: "/dashboard/bank-accounts",
+        href: "/bank-accounts",
         icon: Landmark,
       },
       {
         label: "UPI Transactions",
-        href: "/dashboard/upi-transactions",
+        href: "/upi-transactions",
         icon: Radio,
       },
       {
