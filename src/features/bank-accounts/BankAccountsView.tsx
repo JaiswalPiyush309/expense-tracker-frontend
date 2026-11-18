@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useBankAccounts } from "./hooks/useBankAccounts";
 import { BankAccountsHeader } from "./components/BankAccountsHeader";
+import { BankAccountsKpiGrid } from "./components/BankAccountsKpiGrid";
 
 export function BankAccountsView() {
   const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
@@ -41,6 +42,9 @@ export function BankAccountsView() {
         onOpenAddAccount={() => setIsAddAccountOpen(true)}
         onOpenTransferMoney={() => setIsTransferModalOpen(true)}
       />
+
+      {/* 6-Card KPI Strip */}
+      <BankAccountsKpiGrid />
     </div>
   );
 }

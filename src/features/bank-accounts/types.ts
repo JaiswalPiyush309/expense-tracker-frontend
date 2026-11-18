@@ -8,19 +8,6 @@ export type AccountCategoryTab =
 
 export type BankAccountKind = "savings" | "current" | "credit-card" | "wallet";
 
-export interface BankAccountsKpiItem {
-  id: string;
-  label: string;
-  value: string;
-  valueColor: string;
-  subLeft: string;
-  badgeText: string;
-  badgeTone: "emerald" | "indigo" | "slate" | "rose";
-  iconSymbol: string;
-  iconBg: string;
-  iconColor: string;
-}
-
 export interface BankAccountItem {
   id: string;
   kind: BankAccountKind;

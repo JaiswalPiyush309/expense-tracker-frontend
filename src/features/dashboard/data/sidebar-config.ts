@@ -80,7 +80,7 @@ export const sidebarGroups: SidebarGroup[] = [
       },
       {
         label: "Recurring Payments",
-        href: "/dashboard/recurring-payments",
+        href: "/recurring-payments",
         icon: RefreshCw,
       },
     ],
@@ -90,17 +90,17 @@ export const sidebarGroups: SidebarGroup[] = [
     items: [
       {
         label: "Money Lent",
-        href: "/dashboard/money-lent",
+        href: "/money-lent",
         icon: HandCoins,
       },
       {
         label: "Money Borrowed",
-        href: "/dashboard/money-borrowed",
+        href: "/money-borrowed",
         icon: Wallet,
       },
       {
         label: "Settlements",
-        href: "/dashboard/settlements",
+        href: "/settlements",
         icon: Handshake,
       },
     ],
