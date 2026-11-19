@@ -12,7 +12,6 @@ export function useBankAccounts() {
   const [institutionFilter, setInstitutionFilter] =
     useState<string>("All Banks");
   const [statusFilter, setStatusFilter] = useState<string>("Active");
-  const [syncFilter, setSyncFilter] = useState<string>("Auto-Synced");
 
   // Activity table filters
   const [activityAccountFilter, setActivityAccountFilter] =
@@ -25,12 +24,20 @@ export function useBankAccounts() {
 
   const filteredAccounts = useMemo(() => {
     return accounts.filter((acc) => {
-      if (activeTab === "savings" && acc.kind !== "savings") return false;
-      if (activeTab === "current" && acc.kind !== "current") return false;
+      if (
+        activeTab === "bank" &&
+        acc.kind !== "savings" &&
+        acc.kind !== "current"
+      ) {
+        return false;
+      }
       if (activeTab === "credit-cards" && acc.kind !== "credit-card")
         return false;
       if (activeTab === "wallets" && acc.kind !== "wallet") return false;
       if (activeTab === "cash") return false;
+      if (activeTab === "investments" && acc.kind !== "investment") {
+        return false;
+      }
 
       if (
         institutionFilter !== "All Banks" &&
@@ -107,7 +114,6 @@ export function useBankAccounts() {
     setSearchQuery("");
     setInstitutionFilter("All Banks");
     setStatusFilter("Active");
-    setSyncFilter("Auto-Synced");
   }, []);
 
   const runAccountReconciliation = useCallback(async () => {
@@ -130,8 +136,6 @@ export function useBankAccounts() {
     setInstitutionFilter,
     statusFilter,
     setStatusFilter,
-    syncFilter,
-    setSyncFilter,
     activityAccountFilter,
     setActivityAccountFilter,
     activityTypeFilter,

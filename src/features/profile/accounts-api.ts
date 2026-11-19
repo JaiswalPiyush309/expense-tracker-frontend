@@ -105,8 +105,10 @@ export function getSupportedBanks() {
   return accountRequest<SupportedBanksResponse>("/supported-banks");
 }
 
-export function getBankAccounts() {
-  return accountRequest<BankAccount[]>("");
+export function getBankAccounts(includeArchived = false) {
+  return accountRequest<BankAccount[]>(
+    includeArchived ? "?includeArchived=true" : "",
+  );
 }
 
 export function getAccountDropdownOptions() {

@@ -1,12 +1,17 @@
 export type AccountCategoryTab =
   | "all"
-  | "savings"
-  | "current"
+  | "bank"
   | "credit-cards"
   | "wallets"
-  | "cash";
+  | "cash"
+  | "investments";
 
-export type BankAccountKind = "savings" | "current" | "credit-card" | "wallet";
+export type BankAccountKind =
+  | "savings"
+  | "current"
+  | "credit-card"
+  | "wallet"
+  | "investment";
 
 export interface BankAccountItem {
   id: string;
