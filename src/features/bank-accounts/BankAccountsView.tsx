@@ -5,12 +5,21 @@ import { useBankAccounts } from "./hooks/useBankAccounts";
 import { BankAccountsHeader } from "./components/BankAccountsHeader";
 import { BankAccountsKpiGrid } from "./components/BankAccountsKpiGrid";
 import { BankAccountsFilterToolbar } from "./components/BankAccountsFilterToolbar";
+import { BankAccountCard } from "./components/BankAccountCard";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 
 export function BankAccountsView() {
-  const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
-  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [, setIsAddAccountOpen] = useState(false);
+  const [, setIsTransferModalOpen] = useState(false);
 
   const {
+    accounts,
+    isLoading,
+    accountsError,
+    actionError,
+    actionNotice,
+    busyAccountId,
     activeTab,
     setActiveTab,
     searchQuery,
@@ -19,19 +28,12 @@ export function BankAccountsView() {
     setInstitutionFilter,
     statusFilter,
     setStatusFilter,
-    activityAccountFilter,
-    setActivityAccountFilter,
-    activityTypeFilter,
-    setActivityTypeFilter,
-    currentPage,
-    setCurrentPage,
     filteredAccounts,
-    filteredActivity,
-    handleAddAccount,
     resetFilters,
-    isReconciling,
-    reconcileNotice,
-    runAccountReconciliation,
+    loadAccounts,
+    setDefaultAccount,
+    removeAccount,
+    restoreAccount,
   } = useBankAccounts();
 
   return (
@@ -42,21 +44,88 @@ export function BankAccountsView() {
         onOpenTransferMoney={() => setIsTransferModalOpen(true)}
       />
 
-      {/* 6-Card KPI Strip */}
-      <BankAccountsKpiGrid />
+      {accountsError && (
+        <div role="alert" className="flex flex-wrap items-center gap-3">
+          <p className="text-sm text-bad">{accountsError}</p>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => void loadAccounts()}
+          >
+            Retry
+          </Button>
+        </div>
+      )}
+      {actionError && (
+        <p
+          role="alert"
+          className="rounded-xl bg-bad/10 px-4 py-3 text-sm font-medium text-bad"
+        >
+          {actionError}
+        </p>
+      )}
+      {actionNotice && (
+        <p
+          role="status"
+          className="rounded-xl bg-good-soft px-4 py-3 text-sm font-medium text-good"
+        >
+          {actionNotice}
+        </p>
+      )}
 
-      {/* Category Tabs & Search/Filter Bar */}
-      <BankAccountsFilterToolbar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        institutionFilter={institutionFilter}
-        onInstitutionChange={setInstitutionFilter}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onReset={resetFilters}
-      />
+      {accountsError && accounts.length === 0 ? null : (
+        <>
+          {/* Account summary */}
+          <BankAccountsKpiGrid accounts={accounts} loading={isLoading} />
+
+          {/* Category Tabs & Search/Filter Bar */}
+          <BankAccountsFilterToolbar
+            accounts={accounts}
+            loading={isLoading}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            institutionFilter={institutionFilter}
+            onInstitutionChange={setInstitutionFilter}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            onReset={resetFilters}
+          />
+
+          {isLoading ? (
+            <p role="status" className="text-sm text-muted">
+              Loading bank accounts…
+            </p>
+          ) : filteredAccounts.length === 0 ? (
+            <EmptyState
+              title={accounts.length === 0 ? "No accounts connected" : "No matching accounts"}
+              description={accounts.length === 0
+                ? "Add a bank account, wallet, or cash account to see it here."
+                : "Try changing your search or filters to find an account."}
+              action={accounts.length > 0 ? (
+                <Button type="button" variant="secondary" onClick={resetFilters}>
+                  Clear filters
+                </Button>
+              ) : undefined}
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredAccounts.map((account) => (
+                <BankAccountCard
+                  key={account.id}
+                  account={account}
+                  isBusy={busyAccountId === account.id}
+                  onSetDefault={setDefaultAccount}
+                  onRemove={removeAccount}
+                  onRestore={restoreAccount}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

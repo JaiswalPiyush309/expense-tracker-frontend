@@ -1,32 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Banknote,
   Building2,
   CreditCard,
   Landmark,
-  LoaderCircle,
   RefreshCw,
   Search,
   TrendingUp,
   Wallet,
   type LucideIcon,
 } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { IconButton } from "@/components/ui/IconButton";
 import { Input } from "@/components/ui/Input";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
 import { Select } from "@/components/ui/Select";
-import {
-  getBankAccounts,
-  type BankAccount,
-} from "@/features/profile/accounts-api";
+import type { BankAccount } from "@/features/profile/accounts-api";
 import type { AccountCategoryTab } from "../types";
 
 interface BankAccountsFilterToolbarProps {
+  accounts: BankAccount[];
+  loading: boolean;
   activeTab: AccountCategoryTab;
   onTabChange: (tab: AccountCategoryTab) => void;
   searchQuery: string;
@@ -69,6 +65,8 @@ function accountMatchesTab(account: BankAccount, tab: AccountCategoryTab) {
 }
 
 export function BankAccountsFilterToolbar({
+  accounts,
+  loading,
   activeTab,
   onTabChange,
   searchQuery,
@@ -79,30 +77,6 @@ export function BankAccountsFilterToolbar({
   onStatusChange,
   onReset,
 }: BankAccountsFilterToolbarProps) {
-  const [accounts, setAccounts] = useState<BankAccount[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadAccounts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      setAccounts(await getBankAccounts(true));
-    } catch (loadError) {
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : "Unable to load account filter options.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadAccounts();
-  }, [loadAccounts]);
-
   const statusAccounts = useMemo(
     () =>
       accounts.filter((account) =>
@@ -194,25 +168,8 @@ export function BankAccountsFilterToolbar({
 
       {loading && (
         <p role="status" className="flex items-center gap-2 text-xs text-muted">
-          <LoaderCircle
-            aria-hidden="true"
-            className="h-3.5 w-3.5 animate-spin"
-          />
           Loading account filters…
         </p>
-      )}
-      {error && (
-        <div role="alert" className="flex flex-wrap items-center gap-2">
-          <Badge tone="bad">{error}</Badge>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => void loadAccounts()}
-          >
-            Retry
-          </Button>
-        </div>
       )}
     </div>
   );

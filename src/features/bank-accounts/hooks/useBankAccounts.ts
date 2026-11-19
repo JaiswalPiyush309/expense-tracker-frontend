@@ -1,113 +1,162 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { BANK_ACCOUNTS_MOCK, MULTI_ACCOUNT_ACTIVITY_MOCK } from "../data/mock";
-import { AccountCategoryTab, BankAccountItem } from "../types";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  deleteBankAccount,
+  getBankAccounts,
+  updateBankAccount,
+  type BankAccount,
+} from "@/features/profile/accounts-api";
+import type { AccountCategoryTab } from "../types";
 
 export function useBankAccounts() {
-  const [accounts, setAccounts] =
-    useState<BankAccountItem[]>(BANK_ACCOUNTS_MOCK);
+  const [accounts, setAccounts] = useState<BankAccount[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [accountsError, setAccountsError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
+  const [busyAccountId, setBusyAccountId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<AccountCategoryTab>("all");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [institutionFilter, setInstitutionFilter] =
-    useState<string>("All Banks");
-  const [statusFilter, setStatusFilter] = useState<string>("Active");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [institutionFilter, setInstitutionFilter] = useState("All Banks");
+  const [statusFilter, setStatusFilter] = useState("Active");
 
-  // Activity table filters
-  const [activityAccountFilter, setActivityAccountFilter] =
-    useState<string>("All (6)");
-  const [activityTypeFilter, setActivityTypeFilter] =
-    useState<string>("All Transactions");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [isReconciling, setIsReconciling] = useState<boolean>(false);
-  const [reconcileNotice, setReconcileNotice] = useState<string | null>(null);
+  const loadAccounts = useCallback(async () => {
+    setIsLoading(true);
+    setAccountsError(null);
+    try {
+      setAccounts(await getBankAccounts(true));
+    } catch (error) {
+      setAccountsError(
+        error instanceof Error ? error.message : "Unable to load bank accounts.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let isCurrent = true;
+    getBankAccounts(true)
+      .then((result) => {
+        if (isCurrent) setAccounts(result);
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setAccountsError(
+            error instanceof Error ? error.message : "Unable to load bank accounts.",
+          );
+        }
+      })
+      .finally(() => {
+        if (isCurrent) setIsLoading(false);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   const filteredAccounts = useMemo(() => {
-    return accounts.filter((acc) => {
-      if (
-        activeTab === "bank" &&
-        acc.kind !== "savings" &&
-        acc.kind !== "current"
-      ) {
-        return false;
-      }
-      if (activeTab === "credit-cards" && acc.kind !== "credit-card")
-        return false;
-      if (activeTab === "wallets" && acc.kind !== "wallet") return false;
-      if (activeTab === "cash") return false;
-      if (activeTab === "investments" && acc.kind !== "investment") {
+    const query = searchQuery.trim().toLowerCase();
+    return accounts.filter((account) => {
+      if (statusFilter === "Archived" ? !account.isArchived : account.isArchived) {
         return false;
       }
 
+      if (
+        activeTab === "bank" && account.type !== "BANK" ||
+        activeTab === "credit-cards" && account.type !== "CREDIT_CARD" ||
+        activeTab === "wallets" && account.type !== "WALLET" ||
+        activeTab === "cash" && account.type !== "CASH" ||
+        activeTab === "investments" && account.type !== "INVESTMENT"
+      ) {
+        return false;
+      }
+
+      const institution = account.bankName || account.name;
       if (
         institutionFilter !== "All Banks" &&
-        !acc.institutionName
-          .toLowerCase()
-          .includes(institutionFilter.toLowerCase())
+        !institution.toLowerCase().includes(institutionFilter.toLowerCase())
       ) {
         return false;
       }
 
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matches =
-          acc.institutionName.toLowerCase().includes(q) ||
-          acc.holderName.toLowerCase().includes(q) ||
-          acc.maskedNumber.toLowerCase().includes(q) ||
-          (acc.ifscOrSubCode?.toLowerCase().includes(q) ?? false);
-        if (!matches) return false;
+      if (query) {
+        const searchable = [
+          account.name,
+          account.bankName,
+          account.accountNumberLast4,
+          account.upiId,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        if (!searchable.includes(query)) return false;
       }
 
       return true;
     });
-  }, [accounts, activeTab, institutionFilter, searchQuery]);
+  }, [accounts, activeTab, institutionFilter, searchQuery, statusFilter]);
 
-  const filteredActivity = useMemo(() => {
-    return MULTI_ACCOUNT_ACTIVITY_MOCK.filter((item) => {
-      if (
-        activityAccountFilter !== "All (6)" &&
-        !item.sourceAccountBadge
-          .toLowerCase()
-          .includes(activityAccountFilter.toLowerCase())
-      ) {
-        return false;
-      }
+  const setDefaultAccount = useCallback(async (account: BankAccount) => {
+    setBusyAccountId(account.id);
+    setActionError(null);
+    setActionNotice(null);
+    try {
+      await updateBankAccount(account.id, { isDefault: true });
+      setAccounts((current) =>
+        current.map((item) => ({ ...item, isDefault: item.id === account.id })),
+      );
+      setActionNotice(`${account.name} is now your default account.`);
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : "Unable to change the default account.",
+      );
+    } finally {
+      setBusyAccountId(null);
+    }
+  }, []);
 
-      if (
-        activityTypeFilter === "Inflows" &&
-        !item.amountFormatted.startsWith("+")
-      ) {
-        return false;
-      }
-      if (
-        activityTypeFilter === "Outflows" &&
-        !item.amountFormatted.startsWith("-")
-      ) {
-        return false;
-      }
-      if (
-        activityTypeFilter === "Transfers" &&
-        item.accountDisplayType !== "transfer"
-      ) {
-        return false;
-      }
+  const removeAccount = useCallback(async (account: BankAccount) => {
+    if (!window.confirm(`Remove ${account.name}?`)) return;
 
-      return true;
-    });
-  }, [activityAccountFilter, activityTypeFilter]);
+    setBusyAccountId(account.id);
+    setActionError(null);
+    setActionNotice(null);
+    try {
+      const result = await deleteBankAccount(account.id);
+      setAccounts(await getBankAccounts(true));
+      setActionNotice(result.message);
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : "Unable to remove this account.",
+      );
+    } finally {
+      setBusyAccountId(null);
+    }
+  }, []);
 
-  const handleAddAccount = useCallback(
-    (newAcc: Omit<BankAccountItem, "id">) => {
-      setAccounts((prev) => [
-        ...prev,
-        {
-          ...newAcc,
-          id: `acc-${Date.now()}`,
-        },
-      ]);
-    },
-    [],
-  );
+  const restoreAccount = useCallback(async (account: BankAccount) => {
+    setBusyAccountId(account.id);
+    setActionError(null);
+    setActionNotice(null);
+    try {
+      await updateBankAccount(account.id, { isArchived: false });
+      setAccounts((current) =>
+        current.map((item) =>
+          item.id === account.id ? { ...item, isArchived: false } : item,
+        ),
+      );
+      setActionNotice(`${account.name} has been restored.`);
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : "Unable to restore this account.",
+      );
+    } finally {
+      setBusyAccountId(null);
+    }
+  }, []);
 
   const resetFilters = useCallback(() => {
     setActiveTab("all");
@@ -116,18 +165,13 @@ export function useBankAccounts() {
     setStatusFilter("Active");
   }, []);
 
-  const runAccountReconciliation = useCallback(async () => {
-    setIsReconciling(true);
-    setReconcileNotice(null);
-    await new Promise((r) => setTimeout(r, 500));
-    setIsReconciling(false);
-    setReconcileNotice(
-      "All 6 accounts verified: ₹2,61,500.00 liquid reserves & ₹28,500.00 credit liability reconciled with 0 discrepancies.",
-    );
-  }, []);
-
   return {
     accounts,
+    isLoading,
+    accountsError,
+    actionError,
+    actionNotice,
+    busyAccountId,
     activeTab,
     setActiveTab,
     searchQuery,
@@ -136,18 +180,11 @@ export function useBankAccounts() {
     setInstitutionFilter,
     statusFilter,
     setStatusFilter,
-    activityAccountFilter,
-    setActivityAccountFilter,
-    activityTypeFilter,
-    setActivityTypeFilter,
-    currentPage,
-    setCurrentPage,
     filteredAccounts,
-    filteredActivity,
-    handleAddAccount,
     resetFilters,
-    isReconciling,
-    reconcileNotice,
-    runAccountReconciliation,
+    loadAccounts,
+    setDefaultAccount,
+    removeAccount,
+    restoreAccount,
   };
 }

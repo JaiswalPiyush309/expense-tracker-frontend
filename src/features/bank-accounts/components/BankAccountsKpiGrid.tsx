@@ -1,22 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Banknote,
   CreditCard,
   Landmark,
-  LoaderCircle,
   RefreshCw,
   Wallet,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { EmptyState } from "@/components/ui/EmptyState";
-import {
-  getBankAccounts,
-  type BankAccount,
-} from "@/features/profile/accounts-api";
+import type { BankAccount } from "@/features/profile/accounts-api";
 
 function formatBalances(accounts: BankAccount[]) {
   const totals = new Map<string, number>();
@@ -108,79 +102,41 @@ const metrics = [
   },
 ];
 
-export function BankAccountsKpiGrid() {
-  const [accounts, setAccounts] = useState<BankAccount[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadAccounts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await getBankAccounts();
-      setAccounts(result.filter((account) => !account.isArchived));
-    } catch (loadError) {
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : "Unable to load bank account balances.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadAccounts();
-  }, [loadAccounts]);
+export function BankAccountsKpiGrid({
+  accounts,
+  loading,
+}: {
+  accounts: BankAccount[];
+  loading: boolean;
+}) {
+  const activeAccounts = useMemo(
+    () => accounts.filter((account) => !account.isArchived),
+    [accounts],
+  );
 
   const cards = useMemo(
     () =>
       metrics.map((metric) => {
-        const matchingAccounts = metric.select(accounts);
+        const matchingAccounts = metric.select(activeAccounts);
         return {
           ...metric,
           count: matchingAccounts.length,
           displayValue: metric.value(matchingAccounts),
         };
       }),
-    [accounts],
+    [activeAccounts],
   );
 
   if (loading) {
     return (
       <div role="status" className="flex items-center gap-2 text-sm text-muted">
-        <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
         Loading account balances…
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="space-y-3" role="alert">
-        <p className="text-sm text-bad">{error}</p>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          onClick={() => void loadAccounts()}
-        >
-          <RefreshCw aria-hidden="true" className="h-4 w-4" />
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
-  if (accounts.length === 0) {
-    return (
-      <EmptyState
-        title="No accounts connected"
-        description="Add a bank account, wallet, or cash account to see your balance summary."
-        icon={<Landmark className="h-5 w-5" />}
-      />
-    );
+  if (activeAccounts.length === 0) {
+    return null;
   }
 
   return (

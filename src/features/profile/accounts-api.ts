@@ -62,6 +62,11 @@ export interface CreateBankAccountInput {
   isDefault: boolean;
 }
 
+export type UpdateBankAccountInput = Partial<CreateBankAccountInput> & {
+  balance?: number;
+  isArchived?: boolean;
+};
+
 async function accountRequest<T>(endpoint: string, init?: RequestInit): Promise<T> {
   const token = getAccessToken();
   if (!token) throw new Error("Your session has expired. Please sign in again.");
@@ -123,7 +128,7 @@ export function createBankAccount(input: CreateBankAccountInput) {
   });
 }
 
-export function updateBankAccount(id: string, input: Partial<CreateBankAccountInput>) {
+export function updateBankAccount(id: string, input: UpdateBankAccountInput) {
   return accountRequest<BankAccount>(`/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
