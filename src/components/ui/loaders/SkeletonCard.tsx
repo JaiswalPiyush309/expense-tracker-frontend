@@ -17,6 +17,7 @@
  */
 
 import { cn } from "@/lib/cn";
+import type { CSSProperties } from "react";
 
 type SkeletonVariant = "kpi" | "chart" | "table" | "activity" | "card" | "account";
 
@@ -28,10 +29,11 @@ interface SkeletonCardProps {
 }
 
 /** Base shimmer bar */
-function Shimmer({ className }: { className?: string }) {
+function Shimmer({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
     <div
       aria-hidden="true"
+      style={style}
       className={cn(
         "animate-pulse rounded-lg",
         "bg-surface-muted dark:bg-surface-muted",
