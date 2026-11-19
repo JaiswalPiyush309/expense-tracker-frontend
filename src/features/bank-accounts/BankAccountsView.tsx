@@ -12,6 +12,7 @@ import { SkeletonCard } from "@/components/ui/loaders";
 import { LiquidDistributionCard } from "./components/LiquidDistributionCard";
 import { NetLiquidPositionCard } from "./components/NetLiquidPositionCard";
 import { MultiAccountActivityTable } from "./components/MultiAccountActivityTable";
+import { DoubleEntryPrecisionBanner } from "./components/DoubleEntryPrecisionBanner";
 
 export function BankAccountsView() {
   const [, setIsAddAccountOpen] = useState(false);
@@ -50,6 +51,11 @@ export function BankAccountsView() {
     isActivityLoading,
     activityError,
     loadActivity,
+    isReconciling,
+    reconcileNotice,
+    reconcileHasDiscrepancies,
+    reconcileError,
+    runAccountReconciliation,
   } = useBankAccounts();
 
   return (
@@ -179,6 +185,15 @@ export function BankAccountsView() {
         currentPage={activityPage}
         totalPages={activityTotalPages}
         onPageChange={setActivityPage}
+      />
+
+      {/* Bottom Double-Entry Ledger Precision Protocol Banner */}
+      <DoubleEntryPrecisionBanner
+        isReconciling={isReconciling}
+        reconcileNotice={reconcileNotice}
+        reconcileHasDiscrepancies={reconcileHasDiscrepancies}
+        reconcileError={reconcileError}
+        onRunReconciliation={runAccountReconciliation}
       />
     </div>
   );

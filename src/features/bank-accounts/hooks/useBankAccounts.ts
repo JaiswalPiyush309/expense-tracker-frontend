@@ -13,6 +13,7 @@ import {
   type TransactionPage,
 } from "@/features/transactions/transactions-api";
 import type { AccountCategoryTab } from "../types";
+import { reconcileBankAccounts } from "../reconciliation-api";
 
 export function useBankAccounts() {
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
@@ -31,6 +32,10 @@ export function useBankAccounts() {
   >("All");
   const [activityPage, setActivityPage] = useState(1);
   const [activityReload, setActivityReload] = useState(0);
+  const [isReconciling, setIsReconciling] = useState(false);
+  const [reconcileNotice, setReconcileNotice] = useState<string | null>(null);
+  const [reconcileHasDiscrepancies, setReconcileHasDiscrepancies] = useState(false);
+  const [reconcileError, setReconcileError] = useState<string | null>(null);
   const [activityResult, setActivityResult] = useState<{
     key: string;
     page: TransactionPage;
@@ -246,6 +251,43 @@ export function useBankAccounts() {
     setActivityReload((current) => current + 1);
   }, []);
 
+  const runAccountReconciliation = useCallback(async () => {
+    setIsReconciling(true);
+    setReconcileNotice(null);
+    setReconcileHasDiscrepancies(false);
+    setReconcileError(null);
+
+    try {
+      const result = await reconcileBankAccounts();
+      if (result.discrepancies.length === 0) {
+        setReconcileNotice(
+          `Balances match ledger activity across ${result.checkedAccounts} accounts and ${result.checkedTransactions} transactions.`,
+        );
+      } else {
+        setReconcileHasDiscrepancies(true);
+        const details = result.discrepancies
+          .slice(0, 3)
+          .map(({ accountName, difference, currency }) => {
+            const formattedDifference = new Intl.NumberFormat(undefined, {
+              style: "currency",
+              currency,
+            }).format(Math.abs(difference));
+            return `${accountName} differs by ${formattedDifference}`;
+          });
+        const remaining = result.discrepancies.length - details.length;
+        setReconcileNotice(
+          `${result.discrepancies.length} of ${result.checkedAccounts} account balances differ from ledger activity: ${details.join("; ")}${remaining > 0 ? `; and ${remaining} more` : ""}.`,
+        );
+      }
+    } catch (error) {
+      setReconcileError(
+        error instanceof Error ? error.message : "Unable to reconcile account balances.",
+      );
+    } finally {
+      setIsReconciling(false);
+    }
+  }, []);
+
   const matchingActivityResult =
     activityResult?.key === activityQueryKey ? activityResult.page : null;
   const activityError =
@@ -280,6 +322,11 @@ export function useBankAccounts() {
     isActivityLoading,
     activityError,
     loadActivity,
+    isReconciling,
+    reconcileNotice,
+    reconcileHasDiscrepancies,
+    reconcileError,
+    runAccountReconciliation,
     filteredAccounts,
     resetFilters,
     loadAccounts,
