@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  createBankAccount,
   deleteBankAccount,
   getBankAccounts,
   updateBankAccount,
+  type CreateBankAccountInput,
   type BankAccount,
 } from "@/features/profile/accounts-api";
 import {
@@ -187,6 +189,28 @@ export function useBankAccounts() {
     }
   }, []);
 
+  const addAccount = useCallback(async (input: CreateBankAccountInput) => {
+    setActionError(null);
+    setActionNotice(null);
+    try {
+      const account = await createBankAccount(input);
+      setAccounts((current) => [
+        { ...account, isDefault: account.isDefault },
+        ...current.map((item) => ({
+          ...item,
+          isDefault: account.isDefault ? false : item.isDefault,
+        })),
+      ]);
+      setActionNotice(`${account.name} was added successfully.`);
+      return account;
+    } catch (error) {
+      setActionError(
+        error instanceof Error ? error.message : "Unable to add this account.",
+      );
+      throw error;
+    }
+  }, []);
+
   const removeAccount = useCallback(async (account: BankAccount) => {
     if (!window.confirm(`Remove ${account.name}?`)) return;
 
@@ -331,6 +355,7 @@ export function useBankAccounts() {
     resetFilters,
     loadAccounts,
     setDefaultAccount,
+    addAccount,
     removeAccount,
     restoreAccount,
   };

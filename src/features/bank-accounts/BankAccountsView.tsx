@@ -13,9 +13,10 @@ import { LiquidDistributionCard } from "./components/LiquidDistributionCard";
 import { NetLiquidPositionCard } from "./components/NetLiquidPositionCard";
 import { MultiAccountActivityTable } from "./components/MultiAccountActivityTable";
 import { DoubleEntryPrecisionBanner } from "./components/DoubleEntryPrecisionBanner";
+import { AddBankAccountModal } from "./components/AddBankAccountModal";
 
 export function BankAccountsView() {
-  const [, setIsAddAccountOpen] = useState(false);
+  const [isAddAccountOpen, setIsAddAccountOpen] = useState(false);
   const [, setIsTransferModalOpen] = useState(false);
 
   const {
@@ -36,6 +37,7 @@ export function BankAccountsView() {
     filteredAccounts,
     resetFilters,
     loadAccounts,
+    addAccount,
     setDefaultAccount,
     removeAccount,
     restoreAccount,
@@ -194,6 +196,13 @@ export function BankAccountsView() {
         reconcileHasDiscrepancies={reconcileHasDiscrepancies}
         reconcileError={reconcileError}
         onRunReconciliation={runAccountReconciliation}
+      />
+
+      {/* Add Financial Account Modal */}
+      <AddBankAccountModal
+        isOpen={isAddAccountOpen}
+        onClose={() => setIsAddAccountOpen(false)}
+        onAdd={addAccount}
       />
     </div>
   );
