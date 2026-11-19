@@ -11,6 +11,7 @@ import { CategoriesFilterToolbar } from "./components/CategoriesFilterToolbar";
 import { CategoriesAnalyticsRow } from "./components/CategoriesAnalyticsRow";
 import { CategorySectionGroup } from "./components/CategorySectionGroup";
 import { AddCategoryModal } from "./components/AddCategoryModal";
+import { SkeletonCard } from "@/components/ui/loaders";
 import type { CategoryEnvelopeItem } from "./types";
 
 export function CategoriesView() {
@@ -75,12 +76,8 @@ export function CategoriesView() {
       )}
 
       {isLoading ? (
-        <div
-          role="status"
-          className="flex items-center justify-center gap-2 py-12 text-sm text-muted"
-        >
-          <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
-          Loading categories…
+        <div className="space-y-4">
+          <SkeletonCard variant="table" rows={6} />
         </div>
       ) : !error ? (
         <>

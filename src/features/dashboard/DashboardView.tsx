@@ -7,6 +7,7 @@ import { StatsGrid } from "@/features/dashboard/components/StatsGrid";
 import { TransactionsTable } from "@/features/dashboard/components/TransactionsTable";
 import { TrendChartCard } from "@/features/dashboard/components/TrendChartCard";
 import { WelcomeCard } from "@/features/dashboard/components/WelcomeCard";
+import { PageLoader } from "@/components/ui/loaders";
 import { getDashboardSummary } from "@/features/dashboard/api";
 import type {
   BudgetItem,
@@ -97,7 +98,7 @@ export function DashboardView() {
   const expenses = summary?.expenses.totalAmount ?? 0;
 
   if (isLoading && !summary) {
-    return <DashboardStatus>Loading dashboard…</DashboardStatus>;
+    return <PageLoader message="Loading financial dashboard…" />;
   }
 
   if (error && !summary) {

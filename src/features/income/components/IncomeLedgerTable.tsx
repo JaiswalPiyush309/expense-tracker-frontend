@@ -125,14 +125,30 @@ export function IncomeLedgerTable({
           </thead>
           <tbody className="divide-y divide-line text-xs">
             {isLoading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-14 text-center text-muted">
-                  <span className="inline-flex items-center gap-2">
-                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                    Loading income transactions…
-                  </span>
-                </td>
-              </tr>
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="animate-pulse">
+                  <td className="px-4 py-3.5">
+                    <div className="h-3.5 w-3.5 rounded bg-surface-muted" />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <div className="h-3.5 w-24 rounded bg-surface-muted" />
+                    <div className="mt-1.5 h-2.5 w-16 rounded bg-surface-muted" />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <div className="h-3.5 w-32 rounded bg-surface-muted" />
+                    <div className="mt-1.5 h-2.5 w-20 rounded bg-surface-muted" />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <div className="h-5 w-20 rounded-full bg-surface-muted" />
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <div className="h-3.5 w-24 rounded bg-surface-muted" />
+                  </td>
+                  <td className="px-4 py-3.5 text-right">
+                    <div className="ml-auto h-3.5 w-20 rounded bg-surface-muted" />
+                  </td>
+                </tr>
+              ))
             ) : error ? (
               <tr>
                 <td

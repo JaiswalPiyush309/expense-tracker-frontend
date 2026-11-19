@@ -7,6 +7,7 @@ import { Callout } from "@/components/ui/Callout";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SkeletonCard } from "@/components/ui/loaders";
 import type { BankAccount } from "@/features/profile/accounts-api";
 
 interface NetLiquidPositionCardProps {
@@ -85,9 +86,9 @@ export function NetLiquidPositionCard({
       />
 
       {loading ? (
-        <p role="status" className="mt-6 text-sm text-muted">
-          Loading liquid position…
-        </p>
+        <div className="mt-6">
+          <SkeletonCard variant="card" className="border-0 p-0 shadow-none" />
+        </div>
       ) : positions.length === 0 ? (
         <EmptyState
           className="mt-6 p-6"

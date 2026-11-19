@@ -8,6 +8,7 @@ import { BankAccountsFilterToolbar } from "./components/BankAccountsFilterToolba
 import { BankAccountCard } from "./components/BankAccountCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
+import { SkeletonCard } from "@/components/ui/loaders";
 import { LiquidDistributionCard } from "./components/LiquidDistributionCard";
 import { NetLiquidPositionCard } from "./components/NetLiquidPositionCard";
 import { MultiAccountActivityTable } from "./components/MultiAccountActivityTable";
@@ -110,9 +111,7 @@ export function BankAccountsView() {
           />
 
           {isLoading ? (
-            <p role="status" className="text-sm text-muted">
-              Loading bank accounts…
-            </p>
+            <SkeletonCard variant="account" rows={3} />
           ) : filteredAccounts.length === 0 ? (
             <EmptyState
               title={

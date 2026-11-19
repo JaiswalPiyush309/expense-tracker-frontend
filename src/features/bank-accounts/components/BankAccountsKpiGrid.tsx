@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
+import { SkeletonCard } from "@/components/ui/loaders";
 import type { BankAccount } from "@/features/profile/accounts-api";
 
 function formatBalances(accounts: BankAccount[]) {
@@ -128,11 +129,7 @@ export function BankAccountsKpiGrid({
   );
 
   if (loading) {
-    return (
-      <div role="status" className="flex items-center gap-2 text-sm text-muted">
-        Loading account balances…
-      </div>
-    );
+    return <SkeletonCard variant="kpi" />;
   }
 
   if (activeAccounts.length === 0) {

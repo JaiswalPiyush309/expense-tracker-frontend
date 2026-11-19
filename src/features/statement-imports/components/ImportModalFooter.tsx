@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Spinner } from "@/components/ui/loaders";
 
 interface ImportModalFooterProps {
   selectedCount: number;
@@ -84,6 +85,7 @@ export function ImportModalFooter({
           onClick={onCommit}
           className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
+          {isCommitting && <Spinner size="xs" tone="white" />}
           <span>
             {isCommitting
               ? "Committing Batch..."

@@ -10,6 +10,7 @@ import { CategoryExpenditureCard } from "./components/CategoryExpenditureCard";
 import { SpendingPacingCard } from "./components/SpendingPacingCard";
 import { ExpensesSubTabs } from "./components/ExpensesSubTabs";
 import { ExpensesLedgerTable } from "./components/ExpensesLedgerTable";
+import { SkeletonCard } from "@/components/ui/loaders";
 
 export function ExpensesView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -105,22 +106,25 @@ export function ExpensesView() {
       <ExpensesSubTabs activeTab={activeSubTab} onTabChange={setActiveSubTab} counts={subTabCounts} />
 
       {/* Main Expenses Table */}
-      <ExpensesLedgerTable
-        items={paginatedExpenses}
-        selectedIds={selectedIds}
-        onToggleSelectAll={toggleSelectAll}
-        onToggleSelectRow={toggleSelectRow}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        pageSize={pageSize}
-        onPageSizeChange={setPageSize}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        totalItems={filteredExpenses.length}
-        totalPages={totalPages}
-      />
+      {isLoading ? (
+        <SkeletonCard variant="table" rows={6} />
+      ) : (
+        <ExpensesLedgerTable
+          items={paginatedExpenses}
+          selectedIds={selectedIds}
+          onToggleSelectAll={toggleSelectAll}
+          onToggleSelectRow={toggleSelectRow}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          pageSize={pageSize}
+          onPageSizeChange={setPageSize}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          totalItems={filteredExpenses.length}
+          totalPages={totalPages}
+        />
+      )}
 
-      {isLoading && <p className="text-xs text-slate-500">Loading expenses...</p>}
       {loadError && <p className="text-xs text-rose-600">{loadError}</p>}
 
       {/* Reused AddTransactionDialog */}

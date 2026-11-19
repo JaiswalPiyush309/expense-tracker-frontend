@@ -9,6 +9,7 @@ import { AssetAllocationCard } from "./share-market/components/AssetAllocationCa
 import { TopHoldingsTableCard } from "./share-market/components/TopHoldingsTableCard";
 import { RecentInvestmentActivityCard } from "./share-market/components/RecentInvestmentActivityCard";
 import { useShareMarketSummary } from "./share-market/hooks/useShareMarketSummary";
+import { SkeletonCard } from "@/components/ui/loaders";
 
 export function ShareMarketDashboardView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -41,24 +42,20 @@ export function ShareMarketDashboardView() {
 
       {/* Full-page loading skeleton */}
       {isLoading && !data ? (
-        <div className="animate-pulse space-y-5">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-28 rounded-2xl bg-slate-100 dark:bg-slate-800"
-              />
-            ))}
-          </div>
+        <div className="space-y-5">
+          <SkeletonCard variant="kpi" />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-            <div className="h-72 rounded-2xl bg-slate-100 dark:bg-slate-800 lg:col-span-8" />
-            <div className="h-72 rounded-2xl bg-slate-100 dark:bg-slate-800 lg:col-span-4" />
+            <div className="lg:col-span-8">
+              <SkeletonCard variant="chart" />
+            </div>
+            <div className="lg:col-span-4">
+              <SkeletonCard variant="card" />
+            </div>
           </div>
-          <div className="h-14 rounded-2xl bg-slate-100 dark:bg-slate-800" />
-          <div className="h-64 rounded-2xl bg-slate-100 dark:bg-slate-800" />
+          <SkeletonCard variant="table" rows={5} />
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <div className="h-56 rounded-2xl bg-slate-100 dark:bg-slate-800" />
-            <div className="h-56 rounded-2xl bg-slate-100 dark:bg-slate-800" />
+            <SkeletonCard variant="activity" rows={3} />
+            <SkeletonCard variant="card" />
           </div>
         </div>
       ) : (

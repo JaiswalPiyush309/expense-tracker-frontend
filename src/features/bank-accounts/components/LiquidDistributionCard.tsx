@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { DonutChart, type DonutSegment } from "@/components/chart/DonutChart";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { SkeletonCard } from "@/components/ui/loaders";
 import type { BankAccount } from "@/features/profile/accounts-api";
 
 interface LiquidDistributionCardProps {
@@ -83,9 +84,9 @@ export function LiquidDistributionCard({
       />
 
       {loading ? (
-        <p role="status" className="mt-6 text-sm text-muted">
-          Loading liquid balances…
-        </p>
+        <div className="mt-6">
+          <SkeletonCard variant="card" className="border-0 p-0 shadow-none" />
+        </div>
       ) : distributions.length === 0 ? (
         <EmptyState
           className="mt-6 p-6"

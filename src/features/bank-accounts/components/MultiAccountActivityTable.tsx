@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Pagination } from "@/components/ui/Pagination";
 import { Select } from "@/components/ui/Select";
 import { Table, Td, Th } from "@/components/ui/Table";
+import { SkeletonCard } from "@/components/ui/loaders";
 import type { BankAccount } from "@/features/profile/accounts-api";
 import type {
   ApiTransaction,
@@ -141,10 +142,9 @@ export function MultiAccountActivityTable({
           </Button>
         </div>
       ) : isLoading ? (
-        <p role="status" className="flex items-center gap-2 p-5 text-sm text-muted">
-          <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />
-          Loading account activity…
-        </p>
+        <div className="p-4">
+          <SkeletonCard variant="table" rows={5} />
+        </div>
       ) : items.length === 0 ? (
         <EmptyState
           className="m-5"

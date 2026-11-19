@@ -10,6 +10,7 @@ import { ImportFilterToolbar } from "./components/ImportFilterToolbar";
 import { ImportUploadDropzone } from "./components/ImportUploadDropzone";
 import { StagedTransactionsTable } from "./components/StagedTransactionsTable";
 import { ImportModalFooter } from "./components/ImportModalFooter";
+import { SkeletonCard } from "@/components/ui/loaders";
 
 interface StatementImportViewProps {
   initialBatchId?: string;
@@ -92,8 +93,9 @@ export function StatementImportView({
         )}
 
         {isLoading ? (
-          <div className="py-16 text-center text-xs font-medium text-slate-400">
-            Loading staged statement batch...
+          <div className="space-y-4">
+            <SkeletonCard variant="kpi" />
+            <SkeletonCard variant="table" rows={6} />
           </div>
         ) : !batch || activeStep === 3 ? (
           <ImportUploadDropzone

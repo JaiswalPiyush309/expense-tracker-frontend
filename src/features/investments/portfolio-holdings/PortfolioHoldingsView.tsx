@@ -7,6 +7,7 @@ import { HoldingsExposureStrip } from "./components/HoldingsExposureStrip";
 import { HoldingsFilterToolbar } from "./components/HoldingsFilterToolbar";
 import { HoldingsListTable } from "./components/HoldingsListTable";
 import { ScripInspectorDrawer } from "./components/ScripInspectorDrawer";
+import { SkeletonCard } from "@/components/ui/loaders";
 
 export function PortfolioHoldingsView() {
   const {
@@ -49,59 +50,62 @@ export function PortfolioHoldingsView() {
         </div>
       )}
 
-      {/* Portfolio metrics calculated from the API holdings response */}
-      <HoldingsKpiGrid holdings={allHoldings} />
+      {isLoading && allHoldings.length === 0 ? (
+        <div className="space-y-4">
+          <SkeletonCard variant="kpi" />
+          <SkeletonCard variant="table" rows={6} />
+        </div>
+      ) : (
+        <>
+          {/* Portfolio metrics calculated from the API holdings response */}
+          <HoldingsKpiGrid holdings={allHoldings} />
 
-      <HoldingsExposureStrip holdings={allHoldings} />
+          <HoldingsExposureStrip holdings={allHoldings} />
 
-      {/* Search, Filter & Sort Toolbar */}
-      <HoldingsFilterToolbar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        capFilter={capFilter}
-        onCapChange={setCapFilter}
-        assetClasses={[...new Set(allHoldings.map((holding) => holding.capCategory))]}
-        pnlStatusFilter={pnlStatusFilter}
-        onPnlStatusChange={setPnlStatusFilter}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        viewLayout={viewLayout}
-        onViewLayoutChange={setViewLayout}
-        onReset={resetFilters}
-      />
-
-      {/* Master-Detail Split Grid: Holdings List Table + Scrip Inspector Drawer */}
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
-        <div className={showInspector ? "lg:col-span-8" : "lg:col-span-12"}>
-          <HoldingsListTable
-            holdings={filteredHoldings}
-            selectedRowIds={selectedRowIds}
-            activeScripId={activeScrip?.id ?? null}
-            onToggleSelectAll={toggleSelectAll}
-            onToggleSelectRow={toggleSelectRow}
-            onSelectScripForInspector={(id) => {
-              setActiveScripId(id);
-              setViewLayout("split");
-            }}
+          {/* Search, Filter & Sort Toolbar */}
+          <HoldingsFilterToolbar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            capFilter={capFilter}
+            onCapChange={setCapFilter}
+            assetClasses={[...new Set(allHoldings.map((holding) => holding.capCategory))]}
+            pnlStatusFilter={pnlStatusFilter}
+            onPnlStatusChange={setPnlStatusFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            viewLayout={viewLayout}
+            onViewLayoutChange={setViewLayout}
+            onReset={resetFilters}
           />
-        </div>
 
-        {showInspector && activeScrip && (
-          <div className="lg:col-span-4">
-            <ScripInspectorDrawer
-              scrip={activeScrip}
-              onClose={() => setActiveScripId(null)}
-              detailsError={detailsError}
-              detailsLoading={detailsLoading}
-            />
+          {/* Master-Detail Split Grid: Holdings List Table + Scrip Inspector Drawer */}
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
+            <div className={showInspector ? "lg:col-span-8" : "lg:col-span-12"}>
+              <HoldingsListTable
+                holdings={filteredHoldings}
+                selectedRowIds={selectedRowIds}
+                activeScripId={activeScrip?.id ?? null}
+                onToggleSelectAll={toggleSelectAll}
+                onToggleSelectRow={toggleSelectRow}
+                onSelectScripForInspector={(id) => {
+                  setActiveScripId(id);
+                  setViewLayout("split");
+                }}
+              />
+            </div>
+
+            {showInspector && activeScrip && (
+              <div className="lg:col-span-4">
+                <ScripInspectorDrawer
+                  scrip={activeScrip}
+                  onClose={() => setActiveScripId(null)}
+                  detailsError={detailsError}
+                  detailsLoading={detailsLoading}
+                />
+              </div>
+            )}
           </div>
-        )}
-      </div>
-
-      {isLoading && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-          Loading your holdings…
-        </div>
+        </>
       )}
 
     </div>

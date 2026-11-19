@@ -11,6 +11,7 @@ import { TransactionsFilterPanel } from "./components/TransactionsFilterPanel";
 import { LedgerHealthStrip } from "./components/LedgerHealthStrip";
 import { MasterTransactionsTable } from "./components/MasterTransactionsTable";
 import { DoubleEntryBanner } from "./components/DoubleEntryBanner";
+import { SkeletonCard } from "@/components/ui/loaders";
 
 export function TransactionsView() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -106,22 +107,25 @@ export function TransactionsView() {
       <LedgerHealthStrip items={transactions} />
 
       {/* Master Transactions Table */}
-      <MasterTransactionsTable
-        items={paginatedTransactions}
-        selectedIds={selectedIds}
-        onToggleSelectAll={toggleSelectAll}
-        onToggleSelectRow={toggleSelectRow}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        pageSize={pageSize}
-        onPageSizeChange={setPageSize}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        totalItems={filteredTransactions.length}
-        totalPages={totalPages}
-      />
+      {isLoading ? (
+        <SkeletonCard variant="table" rows={6} />
+      ) : (
+        <MasterTransactionsTable
+          items={paginatedTransactions}
+          selectedIds={selectedIds}
+          onToggleSelectAll={toggleSelectAll}
+          onToggleSelectRow={toggleSelectRow}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          pageSize={pageSize}
+          onPageSizeChange={setPageSize}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          totalItems={filteredTransactions.length}
+          totalPages={totalPages}
+        />
+      )}
 
-      {isLoading && <p className="text-xs text-slate-500">Loading transactions...</p>}
       {loadError && <p className="text-xs text-rose-600">{loadError}</p>}
 
       {/* Bottom Double-Entry Financial Health Verification Banner */}
