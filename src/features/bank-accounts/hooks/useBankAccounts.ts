@@ -7,6 +7,11 @@ import {
   updateBankAccount,
   type BankAccount,
 } from "@/features/profile/accounts-api";
+import {
+  fetchTransactionsPage,
+  type ApiTransactionType,
+  type TransactionPage,
+} from "@/features/transactions/transactions-api";
 import type { AccountCategoryTab } from "../types";
 
 export function useBankAccounts() {
@@ -20,6 +25,20 @@ export function useBankAccounts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [institutionFilter, setInstitutionFilter] = useState("All Banks");
   const [statusFilter, setStatusFilter] = useState("Active");
+  const [activityAccountFilter, setActivityAccountFilter] = useState("All");
+  const [activityTypeFilter, setActivityTypeFilter] = useState<
+    "All" | ApiTransactionType
+  >("All");
+  const [activityPage, setActivityPage] = useState(1);
+  const [activityReload, setActivityReload] = useState(0);
+  const [activityResult, setActivityResult] = useState<{
+    key: string;
+    page: TransactionPage;
+  } | null>(null);
+  const [activityFailure, setActivityFailure] = useState<{
+    key: string;
+    message: string;
+  } | null>(null);
 
   const loadAccounts = useCallback(async () => {
     setIsLoading(true);
@@ -56,6 +75,51 @@ export function useBankAccounts() {
       isCurrent = false;
     };
   }, []);
+
+  const activityQueryKey = [
+    activityAccountFilter,
+    activityTypeFilter,
+    activityPage,
+    activityReload,
+  ].join(":");
+
+  useEffect(() => {
+    let isCurrent = true;
+    fetchTransactionsPage({
+      page: activityPage,
+      limit: 10,
+      relatedAccountId:
+        activityAccountFilter === "All" ? undefined : activityAccountFilter,
+      type: activityTypeFilter === "All" ? undefined : activityTypeFilter,
+    })
+      .then((page) => {
+        if (isCurrent) setActivityResult({ key: activityQueryKey, page });
+      })
+      .catch((error: unknown) => {
+        if (isCurrent) {
+          setActivityFailure({
+            key: activityQueryKey,
+            message:
+              error instanceof Error
+                ? error.message
+                : "Unable to load account activity.",
+          });
+        }
+      });
+
+    const refresh = () => setActivityReload((current) => current + 1);
+    window.addEventListener("transactions:created", refresh);
+    return () => {
+      isCurrent = false;
+      window.removeEventListener("transactions:created", refresh);
+    };
+  }, [
+    activityAccountFilter,
+    activityPage,
+    activityQueryKey,
+    activityReload,
+    activityTypeFilter,
+  ]);
 
   const filteredAccounts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -165,6 +229,30 @@ export function useBankAccounts() {
     setStatusFilter("Active");
   }, []);
 
+  const changeActivityAccountFilter = useCallback((value: string) => {
+    setActivityAccountFilter(value);
+    setActivityPage(1);
+  }, []);
+
+  const changeActivityTypeFilter = useCallback(
+    (value: "All" | ApiTransactionType) => {
+      setActivityTypeFilter(value);
+      setActivityPage(1);
+    },
+    [],
+  );
+
+  const loadActivity = useCallback(() => {
+    setActivityReload((current) => current + 1);
+  }, []);
+
+  const matchingActivityResult =
+    activityResult?.key === activityQueryKey ? activityResult.page : null;
+  const activityError =
+    activityFailure?.key === activityQueryKey ? activityFailure.message : null;
+  const isActivityLoading =
+    !matchingActivityResult && activityError === null;
+
   return {
     accounts,
     isLoading,
@@ -180,6 +268,18 @@ export function useBankAccounts() {
     setInstitutionFilter,
     statusFilter,
     setStatusFilter,
+    activityAccountFilter,
+    changeActivityAccountFilter,
+    activityTypeFilter,
+    changeActivityTypeFilter,
+    activityPage,
+    setActivityPage,
+    activityItems: matchingActivityResult?.items ?? [],
+    activityTotalItems: matchingActivityResult?.meta.total ?? 0,
+    activityTotalPages: matchingActivityResult?.meta.totalPages ?? 1,
+    isActivityLoading,
+    activityError,
+    loadActivity,
     filteredAccounts,
     resetFilters,
     loadAccounts,

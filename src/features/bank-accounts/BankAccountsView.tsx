@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { LiquidDistributionCard } from "./components/LiquidDistributionCard";
 import { NetLiquidPositionCard } from "./components/NetLiquidPositionCard";
+import { MultiAccountActivityTable } from "./components/MultiAccountActivityTable";
 
 export function BankAccountsView() {
   const [, setIsAddAccountOpen] = useState(false);
@@ -36,6 +37,18 @@ export function BankAccountsView() {
     setDefaultAccount,
     removeAccount,
     restoreAccount,
+    activityAccountFilter,
+    changeActivityAccountFilter,
+    activityTypeFilter,
+    changeActivityTypeFilter,
+    activityPage,
+    setActivityPage,
+    activityItems,
+    activityTotalItems,
+    activityTotalPages,
+    isActivityLoading,
+    activityError,
+    loadActivity,
   } = useBankAccounts();
 
   return (
@@ -152,6 +165,22 @@ export function BankAccountsView() {
           </div>
         </div>
       )}
+
+      <MultiAccountActivityTable
+        accounts={accounts}
+        items={activityItems}
+        totalItems={activityTotalItems}
+        isLoading={isActivityLoading}
+        error={activityError}
+        onRetry={loadActivity}
+        accountFilter={activityAccountFilter}
+        onAccountFilterChange={changeActivityAccountFilter}
+        typeFilter={activityTypeFilter}
+        onTypeFilterChange={changeActivityTypeFilter}
+        currentPage={activityPage}
+        totalPages={activityTotalPages}
+        onPageChange={setActivityPage}
+      />
     </div>
   );
 }

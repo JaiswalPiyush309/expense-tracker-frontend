@@ -39,15 +39,67 @@ export interface ApiTransaction {
   category?: { id: string; name: string } | null;
 }
 
-interface TransactionPage {
+export interface TransactionPage {
   items: ApiTransaction[];
-  meta: { totalPages: number; page: number };
+  meta: { total: number; totalPages: number; page: number; limit: number };
 }
 
 export interface TransactionFilters {
   type?: ApiTransactionType;
   startDate?: string;
   endDate?: string;
+}
+
+export interface TransactionPageFilters extends TransactionFilters {
+  page?: number;
+  limit?: number;
+  relatedAccountId?: string;
+}
+
+export async function fetchTransactionsPage(
+  filters: TransactionPageFilters = {},
+): Promise<TransactionPage> {
+  const token = getAccessToken();
+  if (!token) throw new Error("Your session has expired. Please sign in again.");
+
+  const query = new URLSearchParams({
+    page: String(filters.page ?? 1),
+    limit: String(filters.limit ?? 10),
+  });
+  if (filters.type) query.set("type", filters.type);
+  if (filters.startDate) query.set("startDate", filters.startDate);
+  if (filters.endDate) query.set("endDate", filters.endDate);
+  if (filters.relatedAccountId) {
+    query.set("relatedAccountId", filters.relatedAccountId);
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${getApiBaseUrl()}/transactions?${query.toString()}`, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch {
+    throw new Error(
+      "Cannot connect to the transaction server. Check that the backend is running.",
+    );
+  }
+
+  const body = (await response.json().catch(() => undefined)) as
+    | TransactionPage
+    | { message?: string }
+    | undefined;
+  if (!response.ok) {
+    throw new Error(
+      typeof body === "object" && body && "message" in body
+        ? String(body.message)
+        : `Unable to load transactions (${response.status}).`,
+    );
+  }
+
+  return body as TransactionPage;
 }
 
 export async function fetchAllTransactions(
