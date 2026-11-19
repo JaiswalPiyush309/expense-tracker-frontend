@@ -8,6 +8,8 @@ import { BankAccountsFilterToolbar } from "./components/BankAccountsFilterToolba
 import { BankAccountCard } from "./components/BankAccountCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
+import { LiquidDistributionCard } from "./components/LiquidDistributionCard";
+import { NetLiquidPositionCard } from "./components/NetLiquidPositionCard";
 
 export function BankAccountsView() {
   const [, setIsAddAccountOpen] = useState(false);
@@ -100,15 +102,27 @@ export function BankAccountsView() {
             </p>
           ) : filteredAccounts.length === 0 ? (
             <EmptyState
-              title={accounts.length === 0 ? "No accounts connected" : "No matching accounts"}
-              description={accounts.length === 0
-                ? "Add a bank account, wallet, or cash account to see it here."
-                : "Try changing your search or filters to find an account."}
-              action={accounts.length > 0 ? (
-                <Button type="button" variant="secondary" onClick={resetFilters}>
-                  Clear filters
-                </Button>
-              ) : undefined}
+              title={
+                accounts.length === 0
+                  ? "No accounts connected"
+                  : "No matching accounts"
+              }
+              description={
+                accounts.length === 0
+                  ? "Add a bank account, wallet, or cash account to see it here."
+                  : "Try changing your search or filters to find an account."
+              }
+              action={
+                accounts.length > 0 ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={resetFilters}
+                  >
+                    Clear filters
+                  </Button>
+                ) : undefined
+              }
             />
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -125,6 +139,18 @@ export function BankAccountsView() {
             </div>
           )}
         </>
+      )}
+
+      {accountsError && accounts.length === 0 ? null : (
+        /* 2-Column Analytics Section: Liquid Distribution + Net Liquid Position */
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <LiquidDistributionCard accounts={accounts} loading={isLoading} />
+          </div>
+          <div className="lg:col-span-7">
+            <NetLiquidPositionCard accounts={accounts} loading={isLoading} />
+          </div>
+        </div>
       )}
     </div>
   );
