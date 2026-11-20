@@ -6,12 +6,7 @@ export type BudgetRuleCategory = "NEEDS" | "WANTS" | "SAVINGS";
 
 export type TimeframePreset =
   | "THIS_MONTH"
-  | "TODAY"
-  | "THIS_WEEK"
-  | "LAST_MONTH"
-  | "THIS_QUARTER"
-  | "FY25_26"
-  | "CUSTOM";
+  | "LAST_MONTH";
 
 export interface BudgetEnvelope {
   id: string;
@@ -35,9 +30,10 @@ export interface BudgetEnvelope {
 
 export interface BudgetOverviewMetrics {
   totalBudget: number;
+  envelopeCount: number;
   totalOutflow: number;
   outflowPercent: number;
-  outflowTrendPercent: number;
+  outflowTrendPercent: number | null;
   safeSurplus: number;
   remainingDays: number;
   currentDay: number;

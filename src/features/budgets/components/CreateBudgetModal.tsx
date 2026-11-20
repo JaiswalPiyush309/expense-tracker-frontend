@@ -1,16 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Wallet, X } from "lucide-react";
+import { LoaderCircle, Wallet, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 
 interface CreateBudgetModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { title: string; totalCap: number; period: string }) => void;
+  onSubmit: (data: { title: string; totalCap: number }) => Promise<void>;
 }
 
 export function CreateBudgetModal({
@@ -18,15 +17,14 @@ export function CreateBudgetModal({
   onClose,
   onSubmit,
 }: CreateBudgetModalProps) {
-  const [title, setTitle] = useState("April 2025 Master Budget");
-  const [totalCap, setTotalCap] = useState("100000");
-  const [cycle, setCycle] = useState("MONTHLY");
-  const [startDate, setStartDate] = useState("2025-04-01");
+  const [title, setTitle] = useState("");
+  const [totalCap, setTotalCap] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const cap = Number(totalCap);
     if (!Number.isFinite(cap) || cap <= 0) {
@@ -34,12 +32,15 @@ export function CreateBudgetModal({
       return;
     }
 
-    onSubmit({
-      title,
-      totalCap: cap,
-      period: "01 Apr – 30 Apr 2025",
-    });
-    onClose();
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await onSubmit({ title, totalCap: cap });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save this budget.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -51,7 +52,7 @@ export function CreateBudgetModal({
     >
       <div
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
+        onClick={() => !isSubmitting && onClose()}
       />
 
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-2xl">
@@ -72,6 +73,7 @@ export function CreateBudgetModal({
 
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted hover:bg-surface-muted hover:text-ink"
             aria-label="Close dialog"
@@ -109,36 +111,13 @@ export function CreateBudgetModal({
             />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Cycle Frequency" htmlFor="budget-cycle">
-              <Select
-                id="budget-cycle"
-                value={cycle}
-                onChange={(e) => setCycle(e.target.value)}
-              >
-                <option value="MONTHLY">Monthly</option>
-                <option value="QUARTERLY">Quarterly</option>
-                <option value="YEARLY">Yearly (FY)</option>
-              </Select>
-            </Field>
-
-            <Field label="Start Date" htmlFor="budget-start-date">
-              <Input
-                id="budget-start-date"
-                type="date"
-                required
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </Field>
-          </div>
-
           <div className="flex items-center justify-end gap-2.5 border-t border-line pt-4">
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" disabled={isSubmitting} onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" variant="accent" className="px-5 shadow-xs">
-              Save Master Budget
+            <Button type="submit" variant="accent" className="px-5 shadow-xs" disabled={isSubmitting}>
+              {isSubmitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
+              {isSubmitting ? "Saving…" : "Save Master Budget"}
             </Button>
           </div>
         </form>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, RotateCw, X } from "lucide-react";
+import { ArrowRight, LoaderCircle, RotateCw, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
@@ -13,7 +13,7 @@ interface ReallocateModalProps {
   isOpen: boolean;
   onClose: () => void;
   envelopes: BudgetEnvelope[];
-  onReallocate: (sourceId: string, targetId: string, amount: number) => void;
+  onReallocate: (sourceId: string, targetId: string, amount: number) => Promise<void>;
 }
 
 export function ReallocateModal({
@@ -36,13 +36,14 @@ export function ReallocateModal({
   const [targetId, setTargetId] = useState(defaultTarget?.id || envelopes[1]?.id || "");
   const [amount, setAmount] = useState("1200");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
   const sourceEnv = envelopes.find((e) => e.id === sourceId);
   const targetEnv = envelopes.find((e) => e.id === targetId);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const val = Number(amount);
     if (!Number.isFinite(val) || val <= 0) {
@@ -60,7 +61,15 @@ export function ReallocateModal({
       return;
     }
 
-    onReallocate(sourceId, targetId, val);
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await onReallocate(sourceId, targetId, val);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to reallocate this budget.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -72,7 +81,7 @@ export function ReallocateModal({
     >
       <div
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
+        onClick={() => !isSubmitting && onClose()}
       />
 
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-2xl">
@@ -93,6 +102,7 @@ export function ReallocateModal({
 
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted hover:bg-surface-muted hover:text-ink"
             aria-label="Close dialog"
@@ -137,6 +147,7 @@ export function ReallocateModal({
             <Select
               id="realloc-source"
               value={sourceId}
+              disabled={isSubmitting}
               onChange={(e) => setSourceId(e.target.value)}
             >
               {envelopes.map((e) => (
@@ -151,6 +162,7 @@ export function ReallocateModal({
             <Select
               id="realloc-target"
               value={targetId}
+              disabled={isSubmitting}
               onChange={(e) => setTargetId(e.target.value)}
             >
               {envelopes.map((e) => (
@@ -168,18 +180,19 @@ export function ReallocateModal({
               min="1"
               required
               value={amount}
+              disabled={isSubmitting}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="₹1,200"
             />
           </Field>
 
           <div className="flex items-center justify-end gap-2.5 border-t border-line pt-4">
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" disabled={isSubmitting} onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" variant="accent" className="gap-1.5 px-5 shadow-xs">
-              <span>Transfer Funds</span>
-              <ArrowRight className="h-4 w-4" />
+            <Button type="submit" variant="accent" className="gap-1.5 px-5 shadow-xs" disabled={isSubmitting}>
+              {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+              <span>{isSubmitting ? "Saving…" : "Transfer Funds"}</span>
             </Button>
           </div>
         </form>

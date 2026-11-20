@@ -154,6 +154,7 @@ export const INITIAL_BUDGET_ENVELOPES: BudgetEnvelope[] = [
 
 export const INITIAL_OVERVIEW_METRICS: BudgetOverviewMetrics = {
   totalBudget: 100000,
+  envelopeCount: 8,
   totalOutflow: 62500,
   outflowPercent: 62.5,
   outflowTrendPercent: -4.8,

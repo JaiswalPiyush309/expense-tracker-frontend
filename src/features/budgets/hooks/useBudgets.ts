@@ -1,12 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  INITIAL_BUDGET_ENVELOPES,
-  INITIAL_FIFTY_THIRTY_TWENTY,
-  INITIAL_OVERVIEW_METRICS,
-  INITIAL_TRAJECTORY_POINTS,
-} from "../data/mock-data";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   BudgetEnvelope,
   BudgetOverviewMetrics,
@@ -16,17 +10,51 @@ import type {
   TrajectoryPoint,
 } from "../types";
 import { downloadCsv } from "@/lib/csv";
+import {
+  createBudget,
+  deleteBudget,
+  getBudgets,
+  reallocateBudgetFunds,
+  updateBudget,
+} from "../api/budgets-api";
+
+const EMPTY_METRICS: BudgetOverviewMetrics = {
+  totalBudget: 0, envelopeCount: 0, totalOutflow: 0, outflowPercent: 0, outflowTrendPercent: null,
+  safeSurplus: 0, remainingDays: 0, currentDay: 0, totalDays: 0,
+  pacingGaugePercent: 0, pacingTargetPercent: 0, pacingAheadPercent: 0,
+  overBudgetCount: 0, overBudgetName: "None", overBudgetAmount: 0,
+  dailyRunBurn: 0, projectedSpend: 0, projectedSavings: 0,
+};
+const EMPTY_ALLOCATION: FiftyThirtyTwentyAllocation = {
+  needs: { spent: 0, allocated: 0, actualPercent: 0, targetPercent: 50, categories: [] },
+  wants: { spent: 0, allocated: 0, actualPercent: 0, targetPercent: 30, categories: [] },
+  savings: { spent: 0, allocated: 0, actualPercent: 0, targetPercent: 20, categories: [] },
+};
+
+function getSelectedBudgetPeriod(timeframe: TimeframePreset) {
+  const date = new Date();
+  if (timeframe === "LAST_MONTH") date.setDate(0);
+  return { month: date.getMonth() + 1, year: date.getFullYear() };
+}
 
 export function useBudgets() {
-  const [envelopes, setEnvelopes] = useState<BudgetEnvelope[]>(
-    INITIAL_BUDGET_ENVELOPES,
-  );
+  const [envelopes, setEnvelopes] = useState<BudgetEnvelope[]>([]);
+  const [metrics, setMetrics] = useState<BudgetOverviewMetrics>(EMPTY_METRICS);
+  const [fiftyThirtyTwenty, setFiftyThirtyTwenty] =
+    useState<FiftyThirtyTwentyAllocation>(EMPTY_ALLOCATION);
+  const [trajectoryPoints, setTrajectoryPoints] = useState<TrajectoryPoint[]>([]);
+  const [periodLabel, setPeriodLabel] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const [timeframe, setTimeframe] = useState<TimeframePreset>("THIS_MONTH");
   const [statusFilter, setStatusFilter] = useState<"ALL" | BudgetStatus>("ALL");
   const [expenseTypeFilter, setExpenseTypeFilter] = useState<string>("ALL");
   const [progressStateFilter, setProgressStateFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [isAlertDismissed, setIsAlertDismissed] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const latestLoadId = useRef(0);
   const [trajectoryMode, setTrajectoryMode] = useState<
     "CUMULATIVE" | "DAILY_OUTFLOW"
   >("CUMULATIVE");
@@ -46,101 +74,42 @@ export function useBudgets() {
     }, 4500);
   };
 
-  // Dynamically compute metrics from current envelopes
-  const metrics = useMemo<BudgetOverviewMetrics>(() => {
-    let totalBudget = 0;
-    let totalOutflow = 0;
-    let overBudgetCount = 0;
-    let largestOverBudgetName = "";
-    let largestOverBudgetAmount = 0;
-
-    for (const env of envelopes) {
-      totalBudget += env.allocatedAmount;
-      totalOutflow += env.actualSpent;
-      if (env.actualSpent > env.allocatedAmount) {
-        overBudgetCount++;
-        const over = env.actualSpent - env.allocatedAmount;
-        if (over > largestOverBudgetAmount) {
-          largestOverBudgetAmount = over;
-          largestOverBudgetName = env.name;
-        }
-      }
+  // Fetch live budgets from backend
+  const loadBudgets = useCallback(async () => {
+    const loadId = ++latestLoadId.current;
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const { month, year } = getSelectedBudgetPeriod(timeframe);
+      const res = await getBudgets(month, year);
+      if (loadId !== latestLoadId.current) return;
+      setEnvelopes(res.envelopes ?? []);
+      setMetrics(res.metrics ?? EMPTY_METRICS);
+      setFiftyThirtyTwenty(res.fiftyThirtyTwenty ?? EMPTY_ALLOCATION);
+      setTrajectoryPoints(res.trajectoryPoints ?? []);
+      setPeriodLabel(res.period ?? "");
+    } catch (error) {
+      if (loadId !== latestLoadId.current) return;
+      setEnvelopes([]);
+      setMetrics(EMPTY_METRICS);
+      setFiftyThirtyTwenty(EMPTY_ALLOCATION);
+      setTrajectoryPoints([]);
+      setPeriodLabel("");
+      setLoadError(error instanceof Error ? error.message : "Unable to load budgets.");
+    } finally {
+      if (loadId === latestLoadId.current) setIsLoading(false);
     }
+  }, [timeframe]);
 
-    const safeSurplus = Math.max(0, totalBudget - totalOutflow);
-    const outflowPercent =
-      totalBudget > 0 ? Number(((totalOutflow / totalBudget) * 100).toFixed(1)) : 0;
-    const remainingDays = 14;
-    const dailyRunBurn =
-      remainingDays > 0 ? Number((safeSurplus / remainingDays).toFixed(2)) : 0;
-
-    return {
-      totalBudget,
-      totalOutflow,
-      outflowPercent,
-      outflowTrendPercent: -4.8,
-      safeSurplus,
-      remainingDays,
-      currentDay: 16,
-      totalDays: 30,
-      pacingGaugePercent: outflowPercent,
-      pacingTargetPercent: 53.3,
-      pacingAheadPercent: Number((outflowPercent - 53.3).toFixed(1)),
-      overBudgetCount,
-      overBudgetName: largestOverBudgetName || "None",
-      overBudgetAmount: largestOverBudgetAmount,
-      dailyRunBurn,
-      projectedSpend: 94200,
-      projectedSavings: Math.max(0, totalBudget - 94200),
-    };
-  }, [envelopes]);
-
-  // 50/30/20 Rule computation
-  const fiftyThirtyTwenty = useMemo<FiftyThirtyTwentyAllocation>(() => {
-    let needsSpent = 0;
-    let wantsSpent = 0;
-    let total = metrics.totalOutflow || 1;
-
-    for (const env of envelopes) {
-      if (env.ruleCategory === "NEEDS") needsSpent += env.actualSpent;
-      else if (env.ruleCategory === "WANTS") wantsSpent += env.actualSpent;
-    }
-
-    const needsPercent = Math.round((needsSpent / total) * 100);
-    const wantsPercent = Math.round((wantsSpent / total) * 100);
-    const savingsPercent = Math.max(0, 100 - needsPercent - wantsPercent);
-
-    return {
-      needs: {
-        spent: needsSpent,
-        allocated: 50000,
-        actualPercent: needsPercent,
-        targetPercent: 50,
-        categories: ["Rent", "Groceries", "Utilities", "Health"],
-      },
-      wants: {
-        spent: wantsSpent,
-        allocated: 30000,
-        actualPercent: wantsPercent,
-        targetPercent: 30,
-        categories: ["Dining", "Shopping", "Entertainment"],
-      },
-      savings: {
-        spent: Math.round(total * 0.2),
-        allocated: 20000,
-        actualPercent: savingsPercent,
-        targetPercent: 20,
-        categories: ["SIPs", "Emergency Buffer"],
-      },
-    };
-  }, [envelopes, metrics.totalOutflow]);
+  useEffect(() => {
+    void loadBudgets();
+  }, [loadBudgets]);
 
   // Filtered envelopes
   const filteredEnvelopes = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
     return envelopes.filter((item) => {
-      // Search
       if (q) {
         const nameMatch = item.name.toLowerCase().includes(q);
         const subMatch = item.sublabel.toLowerCase().includes(q);
@@ -149,7 +118,6 @@ export function useBudgets() {
         if (!nameMatch && !subMatch && !tagMatch && !actMatch) return false;
       }
 
-      // Status pill tab
       if (statusFilter !== "ALL") {
         if (statusFilter === "HEALTHY") {
           if (item.status !== "HEALTHY" && item.status !== "ON_TRACK") return false;
@@ -158,12 +126,10 @@ export function useBudgets() {
         }
       }
 
-      // Expense type dropdown
       if (expenseTypeFilter !== "ALL") {
         if (item.ruleCategory !== expenseTypeFilter) return false;
       }
 
-      // Progress state dropdown
       if (progressStateFilter !== "ALL") {
         if (progressStateFilter === "OVER" && item.status !== "OVER_BUDGET")
           return false;
@@ -207,97 +173,97 @@ export function useBudgets() {
     };
   }, [envelopes]);
 
-  // Action Handlers
-  const addEnvelope = (newEnv: Omit<BudgetEnvelope, "id" | "remainingBalance" | "utilizationPercent" | "status">) => {
-    const remaining = newEnv.allocatedAmount - newEnv.actualSpent;
-    const util = Number(((newEnv.actualSpent / newEnv.allocatedAmount) * 100).toFixed(1));
-    const status: BudgetStatus =
-      util > 100
-        ? "OVER_BUDGET"
-        : util >= 80
-          ? "NEAR_LIMIT"
-          : util >= 60
-            ? "ON_TRACK"
-            : "HEALTHY";
-
-    const created: BudgetEnvelope = {
-      ...newEnv,
-      id: `env-${Date.now()}`,
-      remainingBalance: remaining,
-      utilizationPercent: util,
-      status,
-    };
-
-    setEnvelopes((prev) => [...prev, created]);
-    setIsAddEnvelopeOpen(false);
-    showNotice(`Added envelope "${created.name}" with budget of ₹${created.allocatedAmount.toLocaleString("en-IN")}.`);
+  // Actions
+  const addEnvelope = async (newEnv: {
+    categoryId: string;
+    categoryName: string;
+    categoryTag: string;
+    allocatedAmount: number;
+    ruleCategory: BudgetEnvelope["ruleCategory"];
+  }) => {
+    setActionError(null);
+    try {
+      const period = getSelectedBudgetPeriod(timeframe);
+      await createBudget({
+        categoryId: newEnv.categoryId,
+        amountLimit: newEnv.allocatedAmount,
+        ...period,
+        ruleCategory: newEnv.ruleCategory,
+        categoryTag: newEnv.categoryTag || newEnv.categoryName,
+      });
+      await loadBudgets();
+      setIsAddEnvelopeOpen(false);
+      showNotice(`Budget envelope for “${newEnv.categoryName}” saved.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to save this envelope.";
+      setActionError(message);
+      throw new Error(message);
+    }
   };
 
-  const reallocateFunds = (sourceEnvId: string, targetEnvId: string, amount: number) => {
-    setEnvelopes((prev) =>
-      prev.map((e) => {
-        if (e.id === sourceEnvId) {
-          const newAlloc = e.allocatedAmount - amount;
-          const newRem = newAlloc - e.actualSpent;
-          const newUtil = Number(((e.actualSpent / newAlloc) * 100).toFixed(1));
-          return {
-            ...e,
-            allocatedAmount: newAlloc,
-            remainingBalance: newRem,
-            utilizationPercent: newUtil,
-            status: newUtil > 100 ? "OVER_BUDGET" : newUtil >= 80 ? "NEAR_LIMIT" : "HEALTHY",
-            footnoteLeft: `Remaining: ₹${newRem.toLocaleString("en-IN")}`,
-          };
-        }
-        if (e.id === targetEnvId) {
-          const newAlloc = e.allocatedAmount + amount;
-          const newRem = newAlloc - e.actualSpent;
-          const newUtil = Number(((e.actualSpent / newAlloc) * 100).toFixed(1));
-          return {
-            ...e,
-            allocatedAmount: newAlloc,
-            remainingBalance: newRem,
-            utilizationPercent: newUtil,
-            status: newUtil > 100 ? "OVER_BUDGET" : newUtil >= 80 ? "NEAR_LIMIT" : "HEALTHY",
-            footnoteLeft:
-              newRem < 0
-                ? `Overrun: -₹${Math.abs(newRem).toLocaleString("en-IN")}`
-                : `Remaining: ₹${newRem.toLocaleString("en-IN")}`,
-          };
-        }
-        return e;
-      }),
-    );
-    setIsReallocateOpen(false);
-    showNotice(`Successfully reallocated ₹${amount.toLocaleString("en-IN")} between envelopes.`);
+  const createMasterBudget = async (data: { title: string; totalCap: number }) => {
+    setActionError(null);
+    try {
+      const period = getSelectedBudgetPeriod(timeframe);
+      await createBudget({
+        amountLimit: data.totalCap,
+        ...period,
+        notes: data.title.trim() || undefined,
+      });
+      await loadBudgets();
+      setIsCreateBudgetOpen(false);
+      showNotice("Master monthly budget saved.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to save the master budget.";
+      setActionError(message);
+      throw new Error(message);
+    }
   };
 
-  const updateEnvelopeLimit = (id: string, newLimit: number) => {
-    setEnvelopes((prev) =>
-      prev.map((e) => {
-        if (e.id !== id) return e;
-        const newRem = newLimit - e.actualSpent;
-        const newUtil = Number(((e.actualSpent / newLimit) * 100).toFixed(1));
-        return {
-          ...e,
-          allocatedAmount: newLimit,
-          remainingBalance: newRem,
-          utilizationPercent: newUtil,
-          status: newUtil > 100 ? "OVER_BUDGET" : newUtil >= 80 ? "NEAR_LIMIT" : "HEALTHY",
-          footnoteLeft:
-            newRem < 0
-              ? `Overrun: -₹${Math.abs(newRem).toLocaleString("en-IN")}`
-              : `Remaining: ₹${newRem.toLocaleString("en-IN")}`,
-        };
-      }),
-    );
-    setSelectedEnvelopeForEdit(null);
-    showNotice("Envelope spending limit adjusted.");
+  const reallocateFunds = async (
+    sourceEnvId: string,
+    targetEnvId: string,
+    amount: number,
+  ) => {
+    setActionError(null);
+    try {
+      await reallocateBudgetFunds({
+        fromBudgetId: sourceEnvId,
+        toBudgetId: targetEnvId,
+        amount,
+      });
+      await loadBudgets();
+      setIsReallocateOpen(false);
+      showNotice(`Successfully reallocated ₹${amount.toLocaleString("en-IN")} between envelopes.`);
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to reallocate this budget.");
+      throw error;
+    }
   };
 
-  const deleteEnvelope = (id: string) => {
-    setEnvelopes((prev) => prev.filter((e) => e.id !== id));
-    showNotice("Envelope removed.");
+  const updateEnvelopeLimit = async (id: string, newLimit: number) => {
+    setActionError(null);
+    try {
+      await updateBudget(id, { amountLimit: newLimit });
+      await loadBudgets();
+      setSelectedEnvelopeForEdit(null);
+      showNotice("Envelope spending limit adjusted.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to update this envelope.");
+      throw error;
+    }
+  };
+
+  const deleteEnvelope = async (id: string) => {
+    setActionError(null);
+    try {
+      await deleteBudget(id);
+      await loadBudgets();
+      showNotice("Envelope removed.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to delete this envelope.");
+      throw error;
+    }
   };
 
   const exportToCsv = () => {
@@ -327,7 +293,7 @@ export function useBudgets() {
       item.recentActivity,
     ]);
 
-    downloadCsv(`LedgerFlow_Budgets_April_2025.csv`, [headers, ...rows]);
+    downloadCsv(`LedgerFlow_Budgets_${new Date().toISOString().slice(0, 10)}.csv`, [headers, ...rows]);
   };
 
   const resetRange = () => {
@@ -343,7 +309,11 @@ export function useBudgets() {
     allEnvelopes: envelopes,
     metrics,
     fiftyThirtyTwenty,
-    trajectoryPoints: INITIAL_TRAJECTORY_POINTS,
+    trajectoryPoints,
+    periodLabel,
+    isLoading,
+    loadError,
+    actionError,
     timeframe,
     setTimeframe,
     statusFilter,
@@ -368,11 +338,14 @@ export function useBudgets() {
     selectedEnvelopeForEdit,
     setSelectedEnvelopeForEdit,
     actionNotice,
+    notify: showNotice,
     addEnvelope,
+    createMasterBudget,
     reallocateFunds,
     updateEnvelopeLimit,
     deleteEnvelope,
     exportToCsv,
     resetRange,
+    refreshBudgets: loadBudgets,
   };
 }

@@ -1,22 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { FolderPlus, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FolderPlus, LoaderCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import type { BudgetEnvelope, BudgetRuleCategory } from "../types";
+import { getCategoryOptions, type CategoryOption } from "@/features/categories/categories-api";
+import type { BudgetRuleCategory } from "../types";
 
 interface AddEnvelopeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (
-    envelope: Omit<
-      BudgetEnvelope,
-      "id" | "remainingBalance" | "utilizationPercent" | "status"
-    >,
-  ) => void;
+  onSubmit: (envelope: {
+    categoryId: string;
+    categoryName: string;
+    categoryTag: string;
+    allocatedAmount: number;
+    ruleCategory: BudgetRuleCategory;
+  }) => Promise<void>;
 }
 
 export function AddEnvelopeModal({
@@ -24,20 +26,42 @@ export function AddEnvelopeModal({
   onClose,
   onSubmit,
 }: AddEnvelopeModalProps) {
-  const [name, setName] = useState("");
-  const [categoryTag, setCategoryTag] = useState("Discretionary");
+  const [categoryTag, setCategoryTag] = useState("");
   const [allocatedAmount, setAllocatedAmount] = useState("");
   const [ruleCategory, setRuleCategory] = useState<BudgetRuleCategory>("WANTS");
-  const [iconName, setIconName] = useState("ShoppingCart");
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categoryId, setCategoryId] = useState("");
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    setIsLoadingCategories(true);
+    getCategoryOptions("EXPENSE")
+      .then((options) => {
+        if (!active) return;
+        setCategories(options);
+        setCategoryId((current) => options.some((option) => option.id === current) ? current : "");
+      })
+      .catch((err: unknown) => {
+        if (active) setError(err instanceof Error ? err.message : "Unable to load expense categories.");
+      })
+      .finally(() => {
+        if (active) setIsLoadingCategories(false);
+      });
+    return () => { active = false; };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const alloc = Number(allocatedAmount);
-    if (!name.trim()) {
-      setError("Please specify the envelope name.");
+    const selectedCategory = categories.find((category) => category.id === categoryId);
+    if (!selectedCategory) {
+      setError("Select an expense category for this envelope.");
       return;
     }
     if (!Number.isFinite(alloc) || alloc <= 0) {
@@ -45,21 +69,24 @@ export function AddEnvelopeModal({
       return;
     }
 
-    onSubmit({
-      name: name.trim(),
-      sublabel: categoryTag,
-      categoryTag,
-      iconName,
-      transactionCount: 0,
-      allocatedAmount: alloc,
-      actualSpent: 0,
-      ruleCategory,
-      footnoteLeft: `Remaining: ₹${alloc.toLocaleString("en-IN")}`,
-      footnoteRight: "New allocation",
-      recentActivity: "No transactions yet",
-      period: "01 Apr – 30 Apr 2025",
-    });
-    onClose();
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await onSubmit({
+        categoryId,
+        categoryName: selectedCategory.name,
+        categoryTag: categoryTag.trim(),
+        allocatedAmount: alloc,
+        ruleCategory,
+      });
+      setCategoryTag("");
+      setAllocatedAmount("");
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save this envelope.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -71,7 +98,7 @@ export function AddEnvelopeModal({
     >
       <div
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
+        onClick={() => !isSubmitting && onClose()}
       />
 
       <div className="relative z-10 w-full max-w-md rounded-2xl border border-line bg-surface p-6 shadow-2xl">
@@ -92,6 +119,7 @@ export function AddEnvelopeModal({
 
           <button
             type="button"
+            disabled={isSubmitting}
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted hover:bg-surface-muted hover:text-ink"
             aria-label="Close dialog"
@@ -107,14 +135,11 @@ export function AddEnvelopeModal({
         )}
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-          <Field label="Category Envelope Name *" htmlFor="env-name">
-            <Input
-              id="env-name"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Vacation &amp; Travel"
-            />
+          <Field label="Expense Category *" htmlFor="env-category">
+            <Select id="env-category" required value={categoryId} disabled={isLoadingCategories || isSubmitting} onChange={(e) => setCategoryId(e.target.value)}>
+              <option value="">{isLoadingCategories ? "Loading categories…" : "Select a category"}</option>
+              {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            </Select>
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
@@ -146,39 +171,25 @@ export function AddEnvelopeModal({
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Sub-tag" htmlFor="env-tag">
+            <Field label="Envelope label" htmlFor="env-tag">
               <Input
                 id="env-tag"
                 value={categoryTag}
                 onChange={(e) => setCategoryTag(e.target.value)}
-                placeholder="e.g. Travel"
+                placeholder="Optional label, e.g. Travel"
               />
             </Field>
 
-            <Field label="Icon Style" htmlFor="env-icon">
-              <Select
-                id="env-icon"
-                value={iconName}
-                onChange={(e) => setIconName(e.target.value)}
-              >
-                <option value="ShoppingCart">Shopping / Cart</option>
-                <option value="Utensils">Dining / Food</option>
-                <option value="Home">Housing / Rent</option>
-                <option value="Car">Transport / Fuel</option>
-                <option value="Zap">Utilities / Bills</option>
-                <option value="Activity">Health / Fitness</option>
-                <option value="Ticket">Entertainment</option>
-                <option value="ShoppingBag">Lifestyle</option>
-              </Select>
-            </Field>
+            <div className="flex items-center text-xs text-muted">The category icon is used automatically.</div>
           </div>
 
           <div className="flex items-center justify-end gap-2.5 border-t border-line pt-4">
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" disabled={isSubmitting} onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" variant="accent" className="px-5 shadow-xs">
-              Add Envelope
+            <Button type="submit" variant="accent" className="px-5 shadow-xs" disabled={isSubmitting || isLoadingCategories || categories.length === 0}>
+              {isSubmitting && <LoaderCircle className="h-4 w-4 animate-spin" />}
+              {isSubmitting ? "Saving…" : "Add Envelope"}
             </Button>
           </div>
         </form>

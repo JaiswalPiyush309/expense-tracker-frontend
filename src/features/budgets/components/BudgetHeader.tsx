@@ -38,13 +38,8 @@ export function BudgetHeader({
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   const presets: { id: TimeframePreset; label: string; icon?: typeof SlidersHorizontal }[] = [
-    { id: "THIS_MONTH", label: "This Month (01 Apr – 30 Apr 2025)" },
-    { id: "TODAY", label: "Today" },
-    { id: "THIS_WEEK", label: "This Week" },
+    { id: "THIS_MONTH", label: "This Month" },
     { id: "LAST_MONTH", label: "Last Month" },
-    { id: "THIS_QUARTER", label: "This Quarter" },
-    { id: "FY25_26", label: "Financial Year (FY25-26)" },
-    { id: "CUSTOM", label: "Custom", icon: SlidersHorizontal },
   ];
 
   return (

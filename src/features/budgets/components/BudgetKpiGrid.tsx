@@ -28,7 +28,7 @@ export function BudgetKpiGrid({ metrics }: BudgetKpiGridProps) {
       id: "total-budget",
       label: "TOTAL BUDGET",
       value: formatINR(metrics.totalBudget, { decimals: true }),
-      subline: "8 envelopes allocated",
+      subline: `${metrics.envelopeCount} category envelopes allocated`,
       footnote: "Monthly Cycle",
       footnoteIcon: Calendar,
       footnoteColor: "text-muted",
@@ -40,7 +40,9 @@ export function BudgetKpiGrid({ metrics }: BudgetKpiGridProps) {
       label: "TOTAL OUTFLOW",
       value: formatINR(metrics.totalOutflow, { decimals: true }),
       subline: `${metrics.outflowPercent}% of limit consumed`,
-      footnote: "↓ -4.8% vs last month run-rate",
+      footnote: metrics.outflowTrendPercent === null
+        ? "No prior month comparison"
+        : `${metrics.outflowTrendPercent > 0 ? "↑" : "↓"} ${Math.abs(metrics.outflowTrendPercent)}% vs last month`,
       footnoteIcon: TrendingDown,
       footnoteColor: "text-good",
       icon: TrendingDown,
@@ -61,7 +63,7 @@ export function BudgetKpiGrid({ metrics }: BudgetKpiGridProps) {
       id: "pacing-gauge",
       label: "PACING GAUGE",
       value: `${metrics.pacingGaugePercent}%`,
-      badge: `+${metrics.pacingAheadPercent}% ahead`,
+      badge: `${Math.abs(metrics.pacingAheadPercent)}% ${metrics.pacingAheadPercent >= 0 ? "ahead" : "behind"}`,
       subline: `Pacing target: ${metrics.pacingTargetPercent}% at Day ${metrics.currentDay}`,
       footnote: `${metrics.remainingDays} days remaining`,
       footnoteIcon: Clock,
@@ -72,8 +74,10 @@ export function BudgetKpiGrid({ metrics }: BudgetKpiGridProps) {
     {
       id: "over-budget",
       label: "OVER BUDGET",
-      value: `${metrics.overBudgetCount} Envelope`,
-      subline: `${metrics.overBudgetName.split(" ")[0]} exceeds by ₹${metrics.overBudgetAmount.toLocaleString("en-IN")}`,
+      value: `${metrics.overBudgetCount} ${metrics.overBudgetCount === 1 ? "Envelope" : "Envelopes"}`,
+      subline: metrics.overBudgetCount > 0
+        ? `${metrics.overBudgetName} exceeds by ₹${metrics.overBudgetAmount.toLocaleString("en-IN")}`
+        : "No category is over its limit",
       footnote: "⚠ Reallocation required",
       footnoteIcon: AlertTriangle,
       footnoteColor: "text-rose-600 font-semibold dark:text-rose-400",

@@ -14,6 +14,7 @@ import { CreateBudgetModal } from "./components/CreateBudgetModal";
 import { AddEnvelopeModal } from "./components/AddEnvelopeModal";
 import { ReallocateModal } from "./components/ReallocateModal";
 import { TemplatesModal } from "./components/TemplatesModal";
+import { EditBudgetLimitModal } from "./components/EditBudgetLimitModal";
 
 export function BudgetsView() {
   const {
@@ -22,6 +23,10 @@ export function BudgetsView() {
     metrics,
     fiftyThirtyTwenty,
     trajectoryPoints,
+    periodLabel,
+    isLoading,
+    loadError,
+    actionError,
     timeframe,
     setTimeframe,
     statusFilter,
@@ -46,12 +51,15 @@ export function BudgetsView() {
     selectedEnvelopeForEdit,
     setSelectedEnvelopeForEdit,
     actionNotice,
+    notify,
+    createMasterBudget,
     addEnvelope,
     reallocateFunds,
     updateEnvelopeLimit,
     deleteEnvelope,
     exportToCsv,
     resetRange,
+    refreshBudgets,
   } = useBudgets();
 
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
@@ -79,6 +87,15 @@ export function BudgetsView() {
         </div>
       )}
 
+      {(loadError || actionError) && (
+        <div role="alert" className="flex items-center justify-between gap-3 rounded-xl border border-bad/30 bg-bad-soft px-4 py-3 text-sm text-bad">
+          <span>{actionError || loadError}</span>
+          {loadError && <button type="button" className="font-semibold underline" onClick={() => void refreshBudgets()}>Retry</button>}
+        </div>
+      )}
+
+      {isLoading && <p role="status" className="text-sm text-muted">Loading your budgets…</p>}
+
       {/* 6-Card KPI Metrics Strip */}
       <BudgetKpiGrid metrics={metrics} />
 
@@ -98,6 +115,7 @@ export function BudgetsView() {
 
         <BudgetTrajectoryCard
           points={trajectoryPoints}
+          period={periodLabel}
           mode={trajectoryMode}
           onModeChange={setTrajectoryMode}
           projectedClose={metrics.projectedSpend}
@@ -134,9 +152,7 @@ export function BudgetsView() {
       <CreateBudgetModal
         isOpen={isCreateBudgetOpen}
         onClose={() => setIsCreateBudgetOpen(false)}
-        onSubmit={(data) => {
-          // Master cap saved
-        }}
+        onSubmit={createMasterBudget}
       />
 
       <AddEnvelopeModal
@@ -155,9 +171,14 @@ export function BudgetsView() {
       <TemplatesModal
         isOpen={isTemplatesOpen}
         onClose={() => setIsTemplatesOpen(false)}
-        onApplyTemplate={(tpl) => {
-          // Template applied
-        }}
+        onApplyTemplate={(tpl) => notify(`“${tpl}” is a planning guide. Set your monthly cap and category envelopes to apply it.`)}
+      />
+
+      <EditBudgetLimitModal
+        envelope={selectedEnvelopeForEdit}
+        onClose={() => setSelectedEnvelopeForEdit(null)}
+        onSave={updateEnvelopeLimit}
+        onDelete={deleteEnvelope}
       />
     </div>
   );
